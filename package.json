@@ -8,7 +8,8 @@
     "packages/*"
   ],
   "scripts": {
-    "test:cost-engine": "tsx packages/cost-engine/src/calculate.test.ts"
+    "test:cost-engine": "tsx packages/cost-engine/src/calculate.test.ts",
+    "test:command-intake": "tsx packages/command-intake/src/parse-arabic-command.test.ts"
   },
   "devDependencies": {
     "tsx": "^4.19.2",
