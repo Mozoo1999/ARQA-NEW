@@ -41,9 +41,9 @@
 {
   "quoteId": "quote-440",
   "currency": "EGP",
-  "recommendedUnitPrice": 182.67,
+  "recommendedUnitPrice": 182.41,
   "landedUnitCost": 154,
-  "totalPrice": 548010,
+  "totalPrice": 547239,
   "selectedOption": {
     "productSourceId": "source-b",
     "transportModeId": "six-wheel",
@@ -53,7 +53,7 @@
     {"kind": "purchase", "unitAmount": 126},
     {"kind": "transport", "unitAmount": 28},
     {"kind": "administration", "unitAmount": 4.62},
-    {"kind": "profit", "unitAmount": 23.83}
+    {"kind": "profit", "unitAmount": 23.79}
   ],
   "pricingSnapshotAt": "2026-08-16T10:00:00Z"
 }
