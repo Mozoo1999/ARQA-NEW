@@ -22,3 +22,7 @@ IMPORTANT STOR
 - [نطاق MVP للمقاولات والتوريدات](docs/06-contracting-mvp-module-map-ar.md)
 - [المعمارية القابلة للتوسع](docs/07-platform-architecture-ar.md)
 - [الحوكمة التشغيلية والبيانية](docs/08-operating-governance-ar.md)
+
+### الرؤية المستقبلية
+
+- [ARQA كمنصة تشغيل ذكية عالمية](docs/09-future-operating-platform-vision-ar.md)
