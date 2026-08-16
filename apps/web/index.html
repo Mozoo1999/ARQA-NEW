@@ -17,6 +17,22 @@
       <div class="badge">نسخة نموذجية</div>
     </header>
 
+    <section class="voice-panel" aria-labelledby="voice-command-title">
+      <div>
+        <p class="eyebrow">أوامر ARQA</p>
+        <h2 id="voice-command-title">اكتب أو قل ما تريد تسجيله</h2>
+        <p>مثال: «استلام دفعة تحويل فودافون كاش 30 ألف جنيه من شركة العالمية»</p>
+      </div>
+      <form id="voice-command-form" class="voice-form">
+        <input id="voice-command-text" aria-label="الأمر الصوتي أو النصي" placeholder="اكتب الأمر أو استخدم الميكروفون…" />
+        <button type="button" id="start-voice" class="secondary">ابدأ أمرًا صوتيًا</button>
+        <button type="submit">حلل الأمر</button>
+      </form>
+      <div id="voice-command-preview" class="command-preview" hidden>
+        <div id="voice-command-result"></div>
+      </div>
+    </section>
+
     <section class="panel input-panel" aria-labelledby="quote-title">
       <div class="section-heading">
         <p class="eyebrow">طلب تسعير</p>
@@ -90,5 +106,6 @@
     </section>
   </main>
   <script type="module" src="./app.js"></script>
+  <script type="module" src="./voice-command.js"></script>
 </body>
 </html>
