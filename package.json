@@ -1,0 +1,17 @@
+{
+  "name": "arqa",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ARQA procurement cost-chain foundation",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "test:cost-engine": "tsx packages/cost-engine/src/calculate.test.ts"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
