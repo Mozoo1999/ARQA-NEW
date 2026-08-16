@@ -30,7 +30,7 @@ function amount(text: string): number | null {
 }
 
 function phone(text: string): string | undefined {
-  const match = normalize(text).match(/(?:رقم|من|الى|إلى)\s*(01\d{5,10})/);
+  const match = normalize(text).match(/(?:رقم|من|الى|الي|إلى)\s*(01\d{5,10})/);
   return match?.[1];
 }
 
