@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARQA | التسعير الذكي</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">ARQA / المرحلة الأولى</p>
+        <h1>التسعير الذكي للتوريدات</h1>
+        <p class="lede">ليس سعر المنتج وحده. احسب سلسلة التكلفة كاملة قبل اتخاذ قرار الشراء أو البيع.</p>
+      </div>
+      <div class="badge">نسخة نموذجية</div>
+    </header>
+
+    <section class="panel input-panel" aria-labelledby="quote-title">
+      <div class="section-heading">
+        <p class="eyebrow">طلب تسعير</p>
+        <h2 id="quote-title">سن 1 إلى موقع المشروع</h2>
+      </div>
+      <form id="quote-form" class="form-grid">
+        <label>الكمية المطلوبة (طن)<input name="quantity" type="number" min="1" value="3000" /></label>
+        <label>سعر الشراء / طن (جنيه)<input name="purchase" type="number" min="0" value="126" /></label>
+        <label>النقل / طن (جنيه)<input name="transport" type="number" min="0" value="28" /></label>
+        <label>التحميل / طن (جنيه)<input name="loading" type="number" min="0" value="0" /></label>
+        <label>رسوم ومصروفات / طن<input name="extras" type="number" min="0" value="0" /></label>
+        <label>الحمولة الصافية للنقلة (طن)<input name="payload" type="number" min="1" value="20" /></label>
+        <label>هالك متوقع (%)<input name="waste" type="number" min="0" max="99" value="0" /></label>
+        <label>مصروف إداري (%)<input name="admin" type="number" min="0" value="3" /></label>
+        <label>هامش ربح — إضافة على التكلفة (%)<input name="profit" type="number" min="0" value="15" /></label>
+        <button type="submit">احسب السعر المقترح</button>
+      </form>
+    </section>
+
+    <section class="result-grid" aria-live="polite">
+      <article class="metric primary">
+        <span>سعر البيع المقترح / طن</span>
+        <strong id="recommended-price">—</strong>
+        <small>قبل الضرائب</small>
+      </article>
+      <article class="metric">
+        <span>التكلفة الهابطة / طن</span>
+        <strong id="landed-cost">—</strong>
+        <small>شراء + نقل + مصروفات + هالك</small>
+      </article>
+      <article class="metric">
+        <span>إجمالي العرض</span>
+        <strong id="total-price">—</strong>
+        <small id="trip-count">—</small>
+      </article>
+    </section>
+
+    <section class="split">
+      <article class="panel">
+        <div class="section-heading">
+          <p class="eyebrow">تفسير القرار</p>
+          <h2>سلسلة التكلفة</h2>
+        </div>
+        <table>
+          <thead><tr><th>البند</th><th>للطّن</th><th>الإجمالي</th></tr></thead>
+          <tbody id="cost-lines"></tbody>
+        </table>
+      </article>
+
+      <article class="panel">
+        <div class="section-heading">
+          <p class="eyebrow">مقارنة مباشرة</p>
+          <h2>بدائل التوريد</h2>
+        </div>
+        <div class="source-option recommended">
+          <div><strong>كسارة B</strong><span>الأفضل حاليًا</span></div>
+          <b>154 ج/طن</b>
+          <p>126 شراء + 28 نقل — أقل تكلفة هابطة.</p>
+        </div>
+        <div class="source-option">
+          <div><strong>كسارة A</strong><span>سعر شراء أقل</span></div>
+          <b>165 ج/طن</b>
+          <p>120 شراء + 45 نقل — النقل يرفع التكلفة النهائية.</p>
+        </div>
+        <div class="source-option">
+          <div><strong>كسارة C</strong><span>غير مفضلة</span></div>
+          <b>178 ج/طن</b>
+          <p>118 شراء + 60 نقل — ليست الأرخص عند التسليم.</p>
+        </div>
+      </article>
+    </section>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
