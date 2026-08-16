@@ -47,8 +47,14 @@ function parse(text) {
 
 function show(text) {
   const command = parse(text);
+  const title = document.createElement("strong");
+  const body = document.createElement("span");
+  const status = document.createElement("small");
+  title.textContent = command.title;
+  body.textContent = command.body;
+  status.textContent = command.status;
+  result.replaceChildren(title, body, status);
   preview.hidden = false;
-  result.innerHTML = `<strong>${command.title}</strong><span>${command.body}</span><small>${command.status}</small>`;
 }
 
 form.addEventListener("submit", (event) => {
