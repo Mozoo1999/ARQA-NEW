@@ -73,3 +73,16 @@ button.secondary:hover { background: #24443e; }
 .command-preview span { margin: 4px 0; }
 .command-preview small { color: #49635c; }
 @media (max-width: 780px) { .voice-form { grid-template-columns: 1fr; } }
+
+
+.notification-panel { margin-bottom: 18px; padding: 26px; border: 1px solid #c9dacf; border-radius: 20px; background: #f6fbf8; }
+.suggestion-card { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; padding: 17px; border: 1px solid #c9e8db; border-radius: 14px; background: #fff; }
+.suggestion-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; color: #fff; background: var(--green); font-weight: 800; }
+.suggestion-card strong { display: block; margin-bottom: 3px; }
+.suggestion-card p { margin: 0 0 5px; color: var(--muted); font-size: .85rem; }
+.suggestion-card small { color: #546b63; font-size: .72rem; }
+.suggestion-actions { display: flex; gap: 8px; }
+button.light { color: var(--green-dark); border-color: #83cbb7; background: #effbf6; }
+button.light:hover { background: #d8f2e8; }
+.suggestion-feedback { min-height: 1.2em; margin: 12px 0 0; color: var(--green-dark); font-size: .84rem; font-weight: 700; }
+@media (max-width: 780px) { .suggestion-card { grid-template-columns: auto 1fr; } .suggestion-actions { grid-column: 1 / -1; } }
