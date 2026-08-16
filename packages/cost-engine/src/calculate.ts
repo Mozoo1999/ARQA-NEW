@@ -39,30 +39,31 @@ export function calculateCostChain(input: CostChainInput): CostChainResult {
   assertRate("profitMarkupRate", input.profitMarkupRate, false);
 
   const requiredSourceQuantity = input.deliveredQuantity / (1 - input.wasteRate);
-  const lines: CostLine[] = input.components.map((component) => {
-    const perSourceUnit = unitAmount(component, input.payloadPerTrip);
-    const total = perSourceUnit * requiredSourceQuantity;
+  const baseLines: CostLine[] = input.components.map((component) => {
+    const amountPerSourceUnit = unitAmount(component, input.payloadPerTrip);
+    const total = amountPerSourceUnit * input.deliveredQuantity;
     return {
       id: component.id,
       kind: component.kind,
       label: component.label,
-      unitAmount: round(total / input.deliveredQuantity),
+      unitAmount: round(amountPerSourceUnit),
       totalAmount: round(total),
     };
   });
 
-  const directCost = lines.reduce((sum, line) => sum + line.totalAmount, 0);
-  const directUnitCost = directCost / input.deliveredQuantity;
-  const wasteTotal = directCost - directCost * (1 - input.wasteRate);
-  lines.push({
+  // Base lines cover the promised quantity; this line exposes the incremental
+  // source quantity required to cover loss, so all displayed totals reconcile.
+  const baseCost = baseLines.reduce((sum, line) => sum + line.totalAmount, 0);
+  const wasteTotal = baseCost * (requiredSourceQuantity / input.deliveredQuantity - 1);
+  const lines: CostLine[] = [...baseLines, {
     id: "waste-adjustment",
     kind: "waste",
     label: "أثر الهالك",
     unitAmount: round(wasteTotal / input.deliveredQuantity),
     totalAmount: round(wasteTotal),
-  });
+  }];
 
-  const landedTotal = directCost;
+  const landedTotal = baseCost + wasteTotal;
   const adminTotal = landedTotal * input.adminRate;
   lines.push({
     id: "administration",
@@ -88,7 +89,7 @@ export function calculateCostChain(input: CostChainInput): CostChainResult {
     estimatedTrips: input.payloadPerTrip
       ? Math.ceil(requiredSourceQuantity / input.payloadPerTrip)
       : null,
-    landedUnitCost: round(directUnitCost),
+    landedUnitCost: round(landedTotal / input.deliveredQuantity),
     recommendedUnitPrice: round(totalPrice / input.deliveredQuantity),
     totalCost: round(costBeforeProfit),
     totalPrice: round(totalPrice),
