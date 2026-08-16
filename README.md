@@ -32,3 +32,8 @@ IMPORTANT STOR
 - [مواصفات الصوت والصور والمستندات وواتساب والتحصيل](docs/10-multimodal-inputs-collections-ar.md)
 - [متطلبات واتساب Business وعقود التكامل](docs/11-whatsapp-integration-ar.md)
 - [مخطط بيانات التحصيل والمدخلات](database/002_multimodal_collections.sql)
+
+### ذكاء إشعارات الهاتف
+
+- [مواصفات إشعارات الهاتف والاقتراحات المالية](docs/12-mobile-notification-intelligence-ar.md)
+- [مخطط بيانات الإشعارات والمطابقات والاقتراحات](database/003_mobile_notification_suggestions.sql)
