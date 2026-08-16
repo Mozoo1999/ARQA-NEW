@@ -33,6 +33,26 @@
       </div>
     </section>
 
+    <section class="notification-panel" aria-labelledby="suggestions-title">
+      <div class="section-heading">
+        <p class="eyebrow">مركز الاقتراحات</p>
+        <h2 id="suggestions-title">إشارة مالية تحتاج مراجعتك</h2>
+      </div>
+      <div id="suggestions-inbox" class="suggestion-card">
+        <div class="suggestion-icon" aria-hidden="true">↗</div>
+        <div>
+          <strong>عملية واردة بقيمة 20,000 جنيه</strong>
+          <p>تمت مطابقة رقم التحويل مع جهة اتصال عميل مسجلة. هل تريد إنشاء مسودة تحصيل؟</p>
+          <small>المصدر: إشعار محفظة مالية مصرح به · لا تُعتمد الحركة إلا بعد المراجعة.</small>
+        </div>
+        <div class="suggestion-actions">
+          <button type="button" data-action="approve">إضافة كمسودة</button>
+          <button type="button" class="secondary light" data-action="dismiss">تجاهل</button>
+        </div>
+      </div>
+      <p id="suggestion-feedback" class="suggestion-feedback" aria-live="polite"></p>
+    </section>
+
     <section class="panel input-panel" aria-labelledby="quote-title">
       <div class="section-heading">
         <p class="eyebrow">طلب تسعير</p>
@@ -107,5 +127,6 @@
   </main>
   <script type="module" src="./app.js"></script>
   <script type="module" src="./voice-command.js"></script>
+  <script type="module" src="./notification-suggestions.js"></script>
 </body>
 </html>
