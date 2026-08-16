@@ -58,3 +58,18 @@ td:nth-child(2), td:nth-child(3) { direction: ltr; text-align: right; }
   .form-grid { grid-template-columns: 1fr; }
   .panel { padding: 20px; }
 }
+
+
+.voice-panel { margin-bottom: 18px; padding: 24px; border-radius: 20px; color: #effff9; background: #182d29; }
+.voice-panel .eyebrow { color: #8ce0ca; }
+.voice-panel h2 { margin-bottom: 6px; }
+.voice-panel p:not(.eyebrow) { margin-bottom: 16px; color: #bed0ca; font-size: .84rem; }
+.voice-form { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; }
+.voice-form input { margin: 0; background: #fbfffd; }
+button.secondary { background: transparent; border: 1px solid #7bc6b3; color: #d4f6ea; }
+button.secondary:hover { background: #24443e; }
+.command-preview { margin-top: 16px; padding: 13px 15px; border-radius: 11px; color: var(--ink); background: #e7f8f1; }
+.command-preview strong, .command-preview span, .command-preview small { display: block; }
+.command-preview span { margin: 4px 0; }
+.command-preview small { color: #49635c; }
+@media (max-width: 780px) { .voice-form { grid-template-columns: 1fr; } }
