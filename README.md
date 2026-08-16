@@ -26,3 +26,9 @@ IMPORTANT STOR
 ### الرؤية المستقبلية
 
 - [ARQA كمنصة تشغيل ذكية عالمية](docs/09-future-operating-platform-vision-ar.md)
+
+### التحصيل والمدخلات الذكية
+
+- [مواصفات الصوت والصور والمستندات وواتساب والتحصيل](docs/10-multimodal-inputs-collections-ar.md)
+- [متطلبات واتساب Business وعقود التكامل](docs/11-whatsapp-integration-ar.md)
+- [مخطط بيانات التحصيل والمدخلات](database/002_multimodal_collections.sql)
