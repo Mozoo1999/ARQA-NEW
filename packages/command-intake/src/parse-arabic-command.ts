@@ -20,7 +20,7 @@ export function normalizeArabic(text: string) {
     .replace(/[٠-٩]/g, (digit) => arabicDigits[digit])
     .replace(/[إأآ]/g, "ا")
     .replace(/ى/g, "ي")
-    .replace(/s+/g, " ");
+    .replace(/\s+/g, " ");
 }
 
 export function extractEgpAmount(text: string): number | null {
@@ -55,9 +55,10 @@ function notRecognized(originalText: string): ParsedCommand {
 export function parseArabicVoiceCommand(originalText: string): ParsedCommand {
   const text = normalizeArabic(originalText);
   const money = extractEgpAmount(text);
-  const installment = text.match(/قسط.*?(?:على سيارة|على مركبة)\s+(.+)$/);
+  const installment = text.match(/قسط.*?(?:على|علي)\s+(?:سيارة|مركبة)\s+(.+)$/);
   if (installment && money) {
-    const assetName = installment[1].trim();
+    const originalInstallment = originalText.trim().match(/قسط.*?(?:على|علي)\s+(?:سيارة|مركبة)\s+(.+)$/);
+    const assetName = (originalInstallment?.[1] ?? installment[1]).trim();
     return {
       originalText,
       normalizedText: text,

@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "NARQA EBOS",
+    "slug": "narqa-ebos",
+    "version": "0.1.0",
+    "orientation": "default",
+    "scheme": "narqa-ebos",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#07111F"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.narqa.ebos",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "يستخدم NARQA EBOS الميكروفون لاستقبال الأوامر الصوتية بعد إذن المستخدم.",
+        "NSCameraUsageDescription": "يستخدم NARQA EBOS الكاميرا لالتقاط الإيصالات والمستندات لمراجعتها.",
+        "NSPhotoLibraryUsageDescription": "يستخدم NARQA EBOS مكتبة الصور لاختيار مستندات الإدخال.",
+        "UIRequiresFullScreen": false
+      }
+    },
+    "android": {
+      "package": "com.narqa.ebos",
+      "permissions": ["RECORD_AUDIO", "CAMERA", "READ_MEDIA_IMAGES"],
+      "adaptiveIcon": {
+        "backgroundColor": "#07111F",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-web-browser"
+    ],
+    "extra": {
+      "apiBaseUrl": "https://narqaebos-c2nmdy4n.manus.space"
+    }
+  }
+}

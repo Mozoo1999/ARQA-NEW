@@ -37,3 +37,31 @@ IMPORTANT STOR
 
 - [مواصفات إشعارات الهاتف والاقتراحات المالية](docs/12-mobile-notification-intelligence-ar.md)
 - [مخطط بيانات الإشعارات والمطابقات والاقتراحات](database/003_mobile_notification_suggestions.sql)
+
+### النسخة المحمولة متعددة المنصات
+
+أُضيف تطبيق Expo في `apps/mobile/` ليعمل على iPhone وAndroid والأجهزة اللوحية. التطبيق يعيد استخدام `packages/cost-engine/` و`packages/command-intake/` مباشرة، ويقدم حاسبة سلسلة تكلفة فعلية وتحليل أوامر عربية مع طلب تأكيد قبل أي تنفيذ. التخطيط يتكيف إلى تنقل سفلي في الهاتف وشريط جانبي في الشاشات اللوحية بعرض 768 نقطة أو أكثر.
+
+للتشغيل:
+
+```bash
+pnpm install
+cd apps/mobile
+pnpm install
+pnpm start
+```
+
+للتأكد من حزمة الويب:
+
+```bash
+pnpm exec expo export --platform web
+```
+
+للتشغيل المحلي على Android أو iOS:
+
+```bash
+pnpm run android
+pnpm run ios
+```
+
+حالة التسليم الحالية: **APK/AAB وiOS IPA غير مولدة** لأن مستودع ARQA-NEW لا يحتوي على إعداد توقيع Android أو Apple Developer. استخدم `apps/mobile/README.md` لأوامر EAS Build الدقيقة بعد توفير بيانات التوقيع. الواجهة الحالية صريحة في أن المستودع لا يوفر backend إنتاجياً بعد؛ لذلك لا تدعي حفظ بيانات أو إشعارات أصلية.
