@@ -194,3 +194,9 @@
 - [x] Update repository documentation and checkpoint with verified mobile delivery status
 - [x] Wire the native mobile app to actual NARQA EBOS operational module launchers and document phone/tablet journeys
 - [ ] Implement and verify native OAuth/deep-link session bootstrap for Android and iOS
+
+## Internal Android APK Delivery
+- [x] Verify Android SDK, Gradle, Java, and Expo native build prerequisites
+- [ ] Build an internal APK artifact from apps/mobile without store publishing
+- [ ] Validate APK artifact metadata and installation readiness
+- [ ] Document internal APK installation steps and any device security prompts
