@@ -12,6 +12,7 @@ import {
 import { StatusBar } from "expo-status-bar";
 import * as WebBrowser from "expo-web-browser";
 import * as ExpoLinking from "expo-linking";
+import * as Speech from "expo-speech";
 import { useEffect, useMemo, useState } from "react";
 import { calculateCostChain } from "../../packages/cost-engine/src/calculate";
 import { parseArabicVoiceCommand } from "../../packages/command-intake/src/parse-arabic-command";
@@ -261,12 +262,15 @@ function CommandsScreen() {
   const [executionState, setExecutionState] = useState<"idle" | "reviewing" | "executed">("reviewing");
 
   const analyze = () => {
-    setParsed(parseArabicVoiceCommand(command));
+    const parsedCommand = parseArabicVoiceCommand(command);
+    setParsed(parsedCommand);
     setExecutionState("reviewing");
+    Speech.speak(`تم تحليل الأمر. النية ${parsedCommand.intent}. راجع التفاصيل قبل الاعتماد.`, { language: "ar-SA", rate: 0.9 });
   };
 
   const confirmAndExecute = () => {
     setExecutionState("executed");
+    Speech.speak("تم تأكيد الإجراء وتسجيله في المسودة التشغيلية.", { language: "ar-SA", rate: 0.9 });
   };
 
   return (
@@ -383,7 +387,10 @@ export default function App() {
     Linking.getInitialURL().then((url) => {
       if (url?.startsWith(REDIRECT_URI)) setAuthState("callback_received");
     });
-    return () => subscription.remove();
+    return () => {
+      subscription.remove();
+      Speech.stop();
+    };
   }, []);
   const isTablet = width >= 768;
   const [activeTab, setActiveTab] = useState<Tab>("home");
