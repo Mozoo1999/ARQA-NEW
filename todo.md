@@ -181,8 +181,8 @@
 ## ARQA-NEW GitHub Repository Synchronization
 - [x] Inspect the selected ARQA-NEW repository and compare its structure with the audited NARQA EBOS project
 - [x] Prepare a safe, documented change set excluding secrets, local logs, build artifacts, and invalid mobile deliverables
-- [ ] Push local commit `ddb1fe2` to ARQA-NEW; remote GitHub write permission is currently rejected with HTTP 403 despite repository metadata reporting admin access
-- [ ] Verify the remote commit and report the delivered revision after GitHub write permission is restored
+- [x] Push the audited source and mobile delivery changes to ARQA-NEW; completed on `main` through commits `34d7579`, `c8733d4`, and `d69abc4` after the earlier 403 blocker was resolved
+- [x] Verify the remote commit and report the delivered revision; verified `d69abc4f7a5d40b9970d7cdb07f8908907ff7ea9` on `main`
 
 ## Mobile App Build — Expo Android, iOS & Tablet
 - [x] Create maintained Expo mobile source under apps/mobile with TypeScript and shared NARQA branding
@@ -197,6 +197,11 @@
 
 ## Internal Android APK Delivery
 - [x] Verify Android SDK, Gradle, Java, and Expo native build prerequisites
-- [ ] Build an internal APK artifact from apps/mobile without store publishing
-- [ ] Validate APK artifact metadata and installation readiness
-- [ ] Document internal APK installation steps and any device security prompts
+- [x] Build an internal APK artifact from apps/mobile without store publishing via GitHub Actions run 32789975004
+- [x] Validate APK artifact metadata and installation readiness: com.narqa.ebos v0.1.0, arm64-v8a, v2 debug signature, SHA-256 recorded
+- [x] Document internal APK installation steps and any device security prompts, conditional on a successfully produced APK artifact
+
+## GitHub Actions Internal APK Build
+- [x] Add a manually triggered GitHub Actions workflow that runs Expo prebuild and produces an Android APK artifact
+- [x] Run the GitHub Actions workflow on ARQA-NEW main and inspect its build log
+- [x] Verify the uploaded APK artifact metadata and provide its download path

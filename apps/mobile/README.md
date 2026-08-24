@@ -51,3 +51,7 @@ npx eas build --platform ios --profile production
 ## تثبيت APK داخلي عند توفر الملف
 
 بعد نجاح `assembleDebug` أو `assembleRelease`، يكون الملف عادةً داخل `android/app/build/outputs/apk/`. انقل ملف APK إلى الهاتف، فعّل السماح بالتثبيت من هذا المصدر عند طلب Android ذلك، ثم افتح الملف واضغط تثبيت. يجب حذف النسخ التجريبية القديمة إذا تعارضت مع المعرّف `com.narqa.ebos`. لا تُستخدم هذه الخطوات حالياً لتقديم ملف تنزيل؛ فمحاولة البناء الحالية لم تنتج APK بسبب توقف Gradle daemon أثناء تهيئة Expo/NDK، كما هو موثق في `MOBILE-VALIDATION.md`.
+
+### تنزيل النسخة الداخلية الجاهزة
+
+تتوفر نسخة اختبارية داخلية من خلال [تشغيل GitHub Actions الناجح](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/32789975004). افتح الرابط، ثم اختر قسم **Artifacts** ونزّل `narqa-ebos-internal-apk`. فك ضغط الملف للحصول على `app-debug.apk`، وانقله إلى هاتف Android (بمعمارية arm64)، ثم وافق على تنبيه **السماح بالتثبيت من هذا المصدر** الذي يظهر من مدير الملفات. احتفظ بملف APK مع قيمة SHA-256 المسجلة في `MOBILE-VALIDATION.md` للتحقق من سلامة النقل.

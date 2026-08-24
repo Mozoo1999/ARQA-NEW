@@ -47,3 +47,19 @@
 تم فحص البيئة ووجد Java 21 وAndroid SDK محلياً بعد تثبيت command-line tools وplatform-tools وAndroid 35 وBuild Tools 35.0.0، كما قام Gradle بتثبيت NDK 27.1.12297006 تلقائياً. تم إنشاء مجلدي Android وiOS بنجاح عبر Expo prebuild. تعذر إكمال `assembleRelease` بعد محاولتين فعليتين لأن Gradle daemon اختفى أثناء تهيئة وحدات Expo/NDK، حتى بعد خفض الذاكرة إلى 768MB وتعطيل البناء المتوازي. لا يوجد APK ناتج صالح للتسليم، ولذلك لا ينبغي استخدام رابط تثبيت قبل تنفيذ البناء في بيئة Android ذات ذاكرة أعلى أو عبر EAS.
 
 محاولة إضافية لـ `assembleDebug` ببناء arm64 فقط، وNew Architecture معطلة، وGradle بذاكرة 1024MB وعامل واحد، انتهت بالنتيجة نفسها: اختفاء Gradle daemon أثناء التجميع. بعد هذه المحاولة لا يوجد ملف APK صالح في `android/app/build/outputs/apk/`؛ يلزم تنفيذ البناء على جهاز/عامل CI بذاكرة أكبر أو استخدام EAS مع حساب Expo.
+
+## APK الداخلي عبر GitHub Actions
+
+تم تجاوز قيد بيئة البناء المحلية عبر تشغيل سير العمل اليدوي [`Build Internal Android APK`](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/32789975004) على GitHub Actions. اكتمل التشغيل رقم `32789975004` بنجاح، وتم رفع ملف APK باسم `narqa-ebos-internal-apk` كملف تنزيل مؤقت لمدة 14 يوماً.
+
+| بند التحقق | النتيجة |
+|---|---|
+| ملف التنزيل | `app-debug.apk` |
+| الحجم | 45MB تقريباً |
+| معرف الحزمة | `com.narqa.ebos` |
+| الإصدار | `0.1.0` (`versionCode 1`) |
+| المعمارية المستهدفة | `arm64-v8a` |
+| التوقيع | Android Debug، مع تحقق APK Signature Scheme v2 |
+| SHA-256 | `d50ae40ee23bed7acf4cd9deedb5508fee6cf6d516725f64b1ca43834224bd24` |
+
+> هذا APK مخصص للاختبار الداخلي، وموقع بمفتاح Android Debug، وليس نسخة متجر أو إصداراً إنتاجياً موقّعاً بمفتاح مؤسسة.
