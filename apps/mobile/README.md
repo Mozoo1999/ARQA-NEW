@@ -55,3 +55,5 @@ npx eas build --platform ios --profile production
 ### تنزيل النسخة الداخلية الجاهزة
 
 تتوفر نسخة اختبارية داخلية من خلال [تشغيل GitHub Actions الناجح](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/32789975004). افتح الرابط، ثم اختر قسم **Artifacts** ونزّل `narqa-ebos-internal-apk`. فك ضغط الملف للحصول على `app-debug.apk`، وانقله إلى هاتف Android (بمعمارية arm64)، ثم وافق على تنبيه **السماح بالتثبيت من هذا المصدر** الذي يظهر من مدير الملفات. احتفظ بملف APK مع قيمة SHA-256 المسجلة في `MOBILE-VALIDATION.md` للتحقق من سلامة النقل.
+
+يتوفر أيضاً [رابط تنزيل مباشر لملف APK الداخلي](/manus-storage/NARQA-EBOS-v0.1.0-internal-arm64_a760ee84.apk). هذا ملف اختبار داخلي موقّع بمفتاح Debug ولا يُستخدم للنشر على المتاجر.
