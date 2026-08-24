@@ -45,3 +45,5 @@
 ## محاولة APK الداخلي
 
 تم فحص البيئة ووجد Java 21 وAndroid SDK محلياً بعد تثبيت command-line tools وplatform-tools وAndroid 35 وBuild Tools 35.0.0، كما قام Gradle بتثبيت NDK 27.1.12297006 تلقائياً. تم إنشاء مجلدي Android وiOS بنجاح عبر Expo prebuild. تعذر إكمال `assembleRelease` بعد محاولتين فعليتين لأن Gradle daemon اختفى أثناء تهيئة وحدات Expo/NDK، حتى بعد خفض الذاكرة إلى 768MB وتعطيل البناء المتوازي. لا يوجد APK ناتج صالح للتسليم، ولذلك لا ينبغي استخدام رابط تثبيت قبل تنفيذ البناء في بيئة Android ذات ذاكرة أعلى أو عبر EAS.
+
+محاولة إضافية لـ `assembleDebug` ببناء arm64 فقط، وNew Architecture معطلة، وGradle بذاكرة 1024MB وعامل واحد، انتهت بالنتيجة نفسها: اختفاء Gradle daemon أثناء التجميع. بعد هذه المحاولة لا يوجد ملف APK صالح في `android/app/build/outputs/apk/`؛ يلزم تنفيذ البناء على جهاز/عامل CI بذاكرة أكبر أو استخدام EAS مع حساب Expo.
