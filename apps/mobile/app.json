@@ -49,6 +49,29 @@
           "speechRecognitionPermission": "اسمح لـ $(PRODUCT_NAME) بتحويل الأوامر الصوتية إلى نص للمراجعة.",
           "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox", "com.google.android.as"]
         }
+      ],
+      [
+        "expo-quick-actions",
+        {
+          "androidIcons": {
+            "voice_shortcut": {
+              "foregroundImage": "./assets/android-icon-foreground.png",
+              "backgroundColor": "#07111F"
+            }
+          },
+          "iosIcons": {
+            "voice_shortcut": "./assets/android-icon-foreground.png"
+          },
+          "iosActions": [
+            {
+              "id": "start-voice-command",
+              "title": "بدء أمر صوتي",
+              "subtitle": "استماع وتحليل بالعربية",
+              "icon": "voice_shortcut",
+              "params": { "action": "voice" }
+            }
+          ]
+        }
       ]
     ],
     "extra": {

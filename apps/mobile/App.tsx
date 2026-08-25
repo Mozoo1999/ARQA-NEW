@@ -14,6 +14,7 @@ import { StatusBar } from "expo-status-bar";
 import * as WebBrowser from "expo-web-browser";
 import * as ExpoLinking from "expo-linking";
 import * as Speech from "expo-speech";
+import * as QuickActions from "expo-quick-actions";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
@@ -149,7 +150,7 @@ function CostScreen() {
   </ScrollView>;
 }
 
-function CommandsScreen() {
+function CommandsScreen({ quickStartId, onQuickStartConsumed }: { quickStartId: number; onQuickStartConsumed: () => void }) {
   const [command, setCommand] = useState(""); const [parsed, setParsed] = useState<ReturnType<typeof parseArabicVoiceCommand> | null>(null); const [isListening, setIsListening] = useState(false); const [voiceError, setVoiceError] = useState<string | null>(null); const [voiceConfidence, setVoiceConfidence] = useState<number | null>(null);
   useSpeechRecognitionEvent("result", event => { const best = event.results[0]; if (!best?.transcript) return; setCommand(best.transcript); setVoiceConfidence(best.confidence >= 0 ? best.confidence : null); if (event.isFinal) { setIsListening(false); Speech.speak("تم استلام النص. راجعه ثم اضغط تحليل الأمر.", { language: "ar-SA", rate: 0.9 }); } });
   useSpeechRecognitionEvent("error", event => { setIsListening(false); setVoiceError(`${event.message || "تعذر التعرف على الصوت"} (${event.error})`); });
@@ -162,6 +163,7 @@ function CommandsScreen() {
   };
   const analyze = () => { if (!command.trim()) { Alert.alert("أدخل أمراً", "استخدم الميكروفون أو اكتب أمراً عربياً قبل التحليل."); return; } const parsedCommand = parseArabicVoiceCommand(command); setParsed(parsedCommand); Speech.speak(`تم تحليل الأمر. النية ${parsedCommand.intent}. راجع التفاصيل قبل الاعتماد.`, { language: "ar-SA", rate: 0.9 }); };
   const openReview = () => Alert.alert("مراجعة مطلوبة", "لن ينفذ التطبيق أي إجراء تلقائياً. افتح وحدة الأوامر في النظام لمراجعة واعتماد المسودة.", [{ text: "فتح وحدة الأوامر", onPress: () => openOperationalModule("/commands") }, { text: "إلغاء", style: "cancel" }]);
+  useEffect(() => { if (!quickStartId) return; void startListening(); onQuickStartConsumed(); }, [quickStartId]);
   return <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     <SectionTitle eyebrow="VOICE & TEXT COMMAND ENGINE" title="الأوامر الصوتية وتحليل النية" description="اضغط بدء الميكروفون لاستقبال الكلام العربي فعلياً، ثم راجع النص والتحليل قبل إرسال أي إجراء إلى النظام." />
     <View style={styles.statusBanner}><View style={[styles.statusDot, { backgroundColor: isListening ? colors.success : colors.accent }]} /><View style={styles.statusCopy}><Text style={styles.statusTitle}>{isListening ? "الميكروفون يستمع الآن" : "الميكروفون متوقف حتى تطلبه"}</Text><Text style={styles.statusText}>{isListening ? "تحدث بالعربية ثم أوقف الميكروفون أو انتظر النتيجة النهائية." : "يطلب التطبيق الإذن ويشغّل خدمة التعرف الأصلية عند الضغط على زر البدء."}</Text></View></View>
@@ -203,9 +205,10 @@ async function startNativeAuth() {
 }
 
 export default function App() {
-  const { width } = useWindowDimensions(); const [authState, setAuthState] = useState<"signed_out" | "callback_received">("signed_out"); const [activeTab, setActiveTab] = useState<Tab>("home"); const isTablet = width >= 768;
+  const { width } = useWindowDimensions(); const [authState, setAuthState] = useState<"signed_out" | "callback_received">("signed_out"); const [activeTab, setActiveTab] = useState<Tab>("home"); const [quickStartId, setQuickStartId] = useState(0); const isTablet = width >= 768;
   useEffect(() => { const subscription = Linking.addEventListener("url", ({ url }) => { if (url.startsWith(REDIRECT_URI)) setAuthState("callback_received"); }); Linking.getInitialURL().then(url => { if (url?.startsWith(REDIRECT_URI)) setAuthState("callback_received"); }); return () => { subscription.remove(); Speech.stop(); try { ExpoSpeechRecognitionModule.abort(); } catch {} }; }, []);
-  const content = activeTab === "home" ? <HomeScreen onNavigate={setActiveTab} /> : activeTab === "cost" ? <CostScreen /> : activeTab === "commands" ? <CommandsScreen /> : activeTab === "intake" ? <DocumentIntakeScreen /> : activeTab === "invoice" ? <InvoiceScreen onNavigate={setActiveTab} /> : <WorkspaceScreen workspace={activeTab} onNavigate={setActiveTab} />;
+  useEffect(() => { let quickSubscription: { remove: () => void } | undefined; const handleQuickAction = (action?: QuickActions.Action) => { if (action?.id !== "start-voice-command") return; setActiveTab("commands"); setQuickStartId(Date.now()); }; void QuickActions.isSupported().then(supported => { if (!supported) return; void QuickActions.setItems([{ id: "start-voice-command", title: "بدء أمر صوتي", subtitle: "استماع وتحليل بالعربية", icon: "voice_shortcut", params: { action: "voice" } }]); handleQuickAction(QuickActions.initial); quickSubscription = QuickActions.addListener(handleQuickAction); }); return () => quickSubscription?.remove(); }, []);
+  const content = activeTab === "home" ? <HomeScreen onNavigate={setActiveTab} /> : activeTab === "cost" ? <CostScreen /> : activeTab === "commands" ? <CommandsScreen quickStartId={quickStartId} onQuickStartConsumed={() => setQuickStartId(0)} /> : activeTab === "intake" ? <DocumentIntakeScreen /> : activeTab === "invoice" ? <InvoiceScreen onNavigate={setActiveTab} /> : <WorkspaceScreen workspace={activeTab} onNavigate={setActiveTab} />;
   return <View style={styles.app}><StatusBar style="light" /><View style={styles.topBar}><Pressable onPress={startNativeAuth} style={({ pressed }) => [styles.authButton, pressed && styles.pressed]}><Text style={styles.authButtonText}>{authState === "callback_received" ? "تمت المصادقة" : "تسجيل الدخول"}</Text></Pressable><View><Text style={styles.brand}>NARQA EBOS</Text><Text style={styles.brandSubtitle}>Enterprise Business Operating System</Text></View><View style={styles.deviceBadge}><Text style={styles.deviceBadgeText}>{isTablet ? "TABLET VIEW" : "MOBILE VIEW"}</Text></View></View><View style={[styles.body, isTablet && styles.bodyTablet]}>{isTablet ? <View style={styles.sideNav}><Text style={styles.navHeading}>مساحات التشغيل</Text>{navItems.map(item => <Pressable key={item.id} onPress={() => setActiveTab(item.id)} style={({ pressed }) => [styles.navItem, activeTab === item.id && styles.navItemActive, pressed && styles.pressed]}><Text style={[styles.navIcon, activeTab === item.id && styles.navTextActive]}>{item.icon}</Text><Text style={[styles.navText, activeTab === item.id && styles.navTextActive]}>{item.label}</Text></Pressable>)}<View style={styles.navFooter}><Text style={styles.navFooterTitle}>نسخة التحقق</Text><Text style={styles.navFooterText}>Native Voice · Native OCR · Responsive</Text></View></View> : null}<View style={styles.mainContent}>{content}</View></View>{!isTablet ? <View style={styles.bottomNav}>{navItems.map(item => <Pressable key={item.id} onPress={() => setActiveTab(item.id)} style={({ pressed }) => [styles.bottomNavItem, pressed && styles.pressed]}><Text style={[styles.navIcon, activeTab === item.id && styles.navTextActive]}>{item.icon}</Text><Text style={[styles.bottomNavText, activeTab === item.id && styles.navTextActive]}>{item.label}</Text></Pressable>)}</View> : null}</View>;
 }
 
