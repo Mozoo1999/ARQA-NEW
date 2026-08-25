@@ -27,7 +27,7 @@ import { extractDocumentFields, getOcrReviewGuidance, type DocumentFields } from
 const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? "https://narqaebos-c2nmdy4n.manus.space";
 const AUTH_START_URL = process.env.EXPO_PUBLIC_AUTH_START_URL;
 const REDIRECT_URI = ExpoLinking.createURL("oauth/callback");
-type Tab = "home" | "cost" | "commands" | "intake";
+type Tab = "home" | "cost" | "commands" | "intake" | "invoice" | "sources" | "suppliers" | "customers" | "projects" | "reports";
 
 const colors = {
   background: "#0B1220", panel: "#131E31", panelRaised: "#18263D", border: "#263A57",
@@ -85,13 +85,14 @@ function ResultMeta({ label, value }: { label: string; value: string }) {
 
 function HomeScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
   const modules = [
-    { title: "مصادر التوريد", description: "استعراض الجهات والمصادر المعتمدة", icon: "◉", action: () => openOperationalModule("/suppliers") },
-    { title: "الموردون", description: "إدارة الموردين وبيانات التواصل", icon: "▦", action: () => openOperationalModule("/suppliers") },
-    { title: "العملاء", description: "فتح سجل جهات الاتصال والمستخدمين", icon: "◌", action: () => openOperationalModule("/admin/users") },
-    { title: "المشاريع", description: "متابعة المشاريع والحالة والفرق", icon: "◈", action: () => openOperationalModule("/projects") },
+    { title: "مصادر التوريد", description: "استعراض الجهات والمصادر المعتمدة", icon: "◉", action: () => onNavigate("sources") },
+    { title: "الموردون", description: "إدارة الموردين وبيانات التواصل", icon: "▦", action: () => onNavigate("suppliers") },
+    { title: "العملاء", description: "سجل جهات الاتصال والعملاء", icon: "◌", action: () => onNavigate("customers") },
+    { title: "المشاريع", description: "متابعة المشاريع والحالة والفرق", icon: "◈", action: () => onNavigate("projects") },
     { title: "إدخال صوتي", description: "تحدث بالعربية ثم راجع الأمر", icon: "🎙", action: () => onNavigate("commands") },
     { title: "صور ومستندات", description: "التقاط، اختيار، وتحليل مسودة", icon: "▣", action: () => onNavigate("intake") },
-    { title: "تقرير مالي", description: "تصفية ومعاينة وتصدير التقارير", icon: "▤", action: () => openOperationalModule("/reports/export") },
+    { title: "إصدار فاتورة", description: "إنشاء مسودة فاتورة ومراجعتها", icon: "▧", action: () => onNavigate("invoice") },
+    { title: "تقرير مالي", description: "تصفية ومعاينة وتصدير التقارير", icon: "▤", action: () => onNavigate("reports") },
   ] as const;
   return <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     <View style={styles.homeHero}><Text style={styles.homeEyebrow}>NARQA EBOS / MOBILE OPERATIONS</Text><Text style={styles.homeTitle}>ماذا تريد أن تُدير الآن؟</Text><Text style={styles.homeSubtitle}>اختر وحدة تشغيل مباشرة. كل عملية مالية أو مستندية تمر بالمراجعة قبل الاعتماد.</Text></View>
@@ -99,7 +100,37 @@ function HomeScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
     <Text style={styles.homeSectionLabel}>مساحات التشغيل</Text>
     <View style={styles.homeModuleGrid}>{modules.map(module => <Pressable key={module.title} onPress={module.action} style={({ pressed }) => [styles.homeModuleCard, pressed && styles.pressed]}><Text style={styles.homeModuleIcon}>{module.icon}</Text><View style={styles.homeModuleCopy}><Text style={styles.homeModuleTitle}>{module.title}</Text><Text style={styles.homeModuleDescription}>{module.description}</Text></View><Text style={styles.homeModuleArrow}>←</Text></Pressable>)}</View>
     <View style={styles.actionCard}><View style={styles.actionCopy}><Text style={styles.actionTitle}>محرك سلسلة التكلفة</Text><Text style={styles.actionText}>احسب تكلفة الوحدة والسعر المقترح مع تفصيل الشراء والنقل والهالك والإدارة والربح.</Text></View><PrimaryButton label="فتح حاسبة التكلفة" onPress={() => onNavigate("cost")} /></View>
-    <View style={styles.infoCard}><Text style={styles.infoTitle}>وحدات النظام المنشورة</Text><Text style={styles.infoText}>الموردون والمشاريع والتقارير تفتح مسارات EBOS المنشورة. لا توجد أرقام أو نتائج مصطنعة داخل لوحة الجوال.</Text><View style={styles.moduleLinks}>{operationalModules.map(module => <Pressable key={module.path} onPress={() => openOperationalModule(module.path)} style={({ pressed }) => [styles.moduleLink, pressed && styles.pressed]}><Text style={styles.moduleLinkText}>{module.label}</Text><Text style={styles.moduleLinkArrow}>←</Text></Pressable>)}</View></View>
+    <View style={styles.infoCard}><Text style={styles.infoTitle}>تنقل جوال داخلي</Text><Text style={styles.infoText}>كل بطاقة أعلاه تبقيك داخل التطبيق. لن يفتح المتصفح إلا إذا اخترت لاحقاً مسار اعتماد محمي بعد اكتمال جلسة المصادقة الأصلية.</Text></View>
+  </ScrollView>;
+}
+
+const workspaceDetails: Record<Extract<Tab, "sources" | "suppliers" | "customers" | "projects" | "reports">, { eyebrow: string; title: string; description: string; connection: string }> = {
+  sources: { eyebrow: "SUPPLY SOURCES", title: "مصادر التوريد", description: "مساحة عمل داخلية لمتابعة مصدر التوريد والبيانات المرتبطة به.", connection: "سيظهر السجل المعتمد هنا بعد إكمال ربط جلسة الجوال بواجهة البيانات المحمية." },
+  suppliers: { eyebrow: "SUPPLIERS", title: "الموردون", description: "مساحة العمل الداخلية للموردين وبيانات التواصل والتصنيف.", connection: "لا تُعرض بيانات بديلة أو مصطنعة. يتطلب الجلب الحقيقي جلسة مصادقة جوال معتمدة." },
+  customers: { eyebrow: "CUSTOMER CONTACTS", title: "العملاء وجهات الاتصال", description: "مساحة داخلية لجهات العملاء؛ السجل الخلفي المخصص للعملاء لم يُنشأ بعد في المخطط المدقق.", connection: "لن ينقلك التطبيق إلى الويب. يُستكمل الربط عندما تتوفر وحدة العملاء وواجهة API المعتمدة." },
+  projects: { eyebrow: "PROJECTS", title: "المشاريع", description: "مساحة العمل الداخلية لمتابعة المشروع والحالة والأطراف المشاركة.", connection: "تظل البيانات الحية محمية بالمصادقة، لذلك لا تُعرض أي سجلات حتى يتم ربط جلسة الجوال." },
+  reports: { eyebrow: "FINANCIAL REPORTS", title: "التقرير المالي", description: "مساحة داخلية لتصفية ومعاينة تقرير مالي قبل التصدير.", connection: "يحتاج تحميل التقرير الفعلي إلى جلسة مصادقة والربط بواجهة التقارير، ولا ينفذ التطبيق تصديراً وهمياً." },
+};
+
+function WorkspaceScreen({ workspace, onNavigate }: { workspace: Extract<Tab, "sources" | "suppliers" | "customers" | "projects" | "reports">; onNavigate: (tab: Tab) => void }) {
+  const details = workspaceDetails[workspace];
+  return <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+    <SectionTitle eyebrow={details.eyebrow} title={details.title} description={details.description} />
+    <View style={styles.localWorkspaceBanner}><Text style={styles.localWorkspaceTitle}>أنت داخل تطبيق NARQA EBOS</Text><Text style={styles.localWorkspaceText}>{details.connection}</Text></View>
+    <View style={styles.infoCard}><Text style={styles.infoTitle}>حالة البيانات</Text><Text style={styles.infoText}>لا توجد بيانات محلية أو نتائج مصطنعة في هذه المساحة. عند اكتمال المصادقة الأصلية، تُحمّل هذه الشاشة نفس البيانات المعتمدة من النظام دون مغادرة التطبيق.</Text></View>
+    <PrimaryButton label="العودة إلى مركز التشغيل" onPress={() => onNavigate("home")} />
+  </ScrollView>;
+}
+
+function InvoiceScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
+  const [customer, setCustomer] = useState(""); const [invoiceNo, setInvoiceNo] = useState(""); const [amount, setAmount] = useState(""); const [description, setDescription] = useState(""); const [reviewing, setReviewing] = useState(false); const [error, setError] = useState<string | null>(null);
+  const review = () => { const parsedAmount = Number(amount); if (!customer.trim() || !invoiceNo.trim() || !description.trim() || !Number.isFinite(parsedAmount) || parsedAmount <= 0) { setError("أدخل العميل ورقم الفاتورة والوصف ومبلغاً موجباً قبل المراجعة."); return; } setError(null); setReviewing(true); };
+  return <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+    <SectionTitle eyebrow="INVOICE DRAFT" title="إصدار فاتورة" description="أنشئ مسودة داخل التطبيق وراجعها. لا يرحّل التطبيق فاتورة رسمية أو قيداً مالياً تلقائياً." />
+    <View style={styles.localWorkspaceBanner}><Text style={styles.localWorkspaceTitle}>مسودة داخل التطبيق</Text><Text style={styles.localWorkspaceText}>لن تُصدر الفاتورة رسمياً حتى تتوفر المصادقة الأصلية وواجهة ترحيل الفواتير المعتمدة.</Text></View>
+    <View style={styles.formCard}><View style={styles.formGrid}><Field label="اسم العميل" value={customer} onChangeText={setCustomer} keyboardType="default" /><Field label="رقم الفاتورة" value={invoiceNo} onChangeText={setInvoiceNo} keyboardType="default" /><Field label="المبلغ قبل الضريبة" value={amount} onChangeText={setAmount} suffix="ج.م" /><Field label="وصف الفاتورة" value={description} onChangeText={setDescription} keyboardType="default" /></View>{error ? <Text style={styles.inlineError}>{error}</Text> : null}<PrimaryButton label="مراجعة مسودة الفاتورة" onPress={review} /></View>
+    {reviewing ? <View style={styles.resultCard}><Text style={styles.resultLabel}>بانتظار الاعتماد</Text><Text style={styles.parsedSummary}>فاتورة {invoiceNo} للعميل {customer}</Text><View style={styles.resultMetaRow}><ResultMeta label="المبلغ" value={`${Number(amount).toLocaleString("en-US")} ج.م`} /><ResultMeta label="الحالة" value="مسودة مراجعة" /></View><Text style={styles.reviewWarning}>لم تُرسل هذه الفاتورة ولم يُنشأ قيد مالي. يتطلب الإصدار الرسمي جلسة مصادقة وربطاً بواجهة الفواتير الخلفية.</Text></View> : null}
+    <SecondaryButton label="العودة إلى مركز التشغيل" onPress={() => onNavigate("home")} />
   </ScrollView>;
 }
 
@@ -174,7 +205,7 @@ async function startNativeAuth() {
 export default function App() {
   const { width } = useWindowDimensions(); const [authState, setAuthState] = useState<"signed_out" | "callback_received">("signed_out"); const [activeTab, setActiveTab] = useState<Tab>("home"); const isTablet = width >= 768;
   useEffect(() => { const subscription = Linking.addEventListener("url", ({ url }) => { if (url.startsWith(REDIRECT_URI)) setAuthState("callback_received"); }); Linking.getInitialURL().then(url => { if (url?.startsWith(REDIRECT_URI)) setAuthState("callback_received"); }); return () => { subscription.remove(); Speech.stop(); try { ExpoSpeechRecognitionModule.abort(); } catch {} }; }, []);
-  const content = activeTab === "home" ? <HomeScreen onNavigate={setActiveTab} /> : activeTab === "cost" ? <CostScreen /> : activeTab === "commands" ? <CommandsScreen /> : <DocumentIntakeScreen />;
+  const content = activeTab === "home" ? <HomeScreen onNavigate={setActiveTab} /> : activeTab === "cost" ? <CostScreen /> : activeTab === "commands" ? <CommandsScreen /> : activeTab === "intake" ? <DocumentIntakeScreen /> : activeTab === "invoice" ? <InvoiceScreen onNavigate={setActiveTab} /> : <WorkspaceScreen workspace={activeTab} onNavigate={setActiveTab} />;
   return <View style={styles.app}><StatusBar style="light" /><View style={styles.topBar}><Pressable onPress={startNativeAuth} style={({ pressed }) => [styles.authButton, pressed && styles.pressed]}><Text style={styles.authButtonText}>{authState === "callback_received" ? "تمت المصادقة" : "تسجيل الدخول"}</Text></Pressable><View><Text style={styles.brand}>NARQA EBOS</Text><Text style={styles.brandSubtitle}>Enterprise Business Operating System</Text></View><View style={styles.deviceBadge}><Text style={styles.deviceBadgeText}>{isTablet ? "TABLET VIEW" : "MOBILE VIEW"}</Text></View></View><View style={[styles.body, isTablet && styles.bodyTablet]}>{isTablet ? <View style={styles.sideNav}><Text style={styles.navHeading}>مساحات التشغيل</Text>{navItems.map(item => <Pressable key={item.id} onPress={() => setActiveTab(item.id)} style={({ pressed }) => [styles.navItem, activeTab === item.id && styles.navItemActive, pressed && styles.pressed]}><Text style={[styles.navIcon, activeTab === item.id && styles.navTextActive]}>{item.icon}</Text><Text style={[styles.navText, activeTab === item.id && styles.navTextActive]}>{item.label}</Text></Pressable>)}<View style={styles.navFooter}><Text style={styles.navFooterTitle}>نسخة التحقق</Text><Text style={styles.navFooterText}>Native Voice · Native OCR · Responsive</Text></View></View> : null}<View style={styles.mainContent}>{content}</View></View>{!isTablet ? <View style={styles.bottomNav}>{navItems.map(item => <Pressable key={item.id} onPress={() => setActiveTab(item.id)} style={({ pressed }) => [styles.bottomNavItem, pressed && styles.pressed]}><Text style={[styles.navIcon, activeTab === item.id && styles.navTextActive]}>{item.icon}</Text><Text style={[styles.bottomNavText, activeTab === item.id && styles.navTextActive]}>{item.label}</Text></Pressable>)}</View> : null}</View>;
 }
 
@@ -204,4 +235,5 @@ const styles = StyleSheet.create({
   bottomNav: { flexDirection: "row", backgroundColor: "#0D1728", borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 8, paddingBottom: 10 }, bottomNavItem: { flex: 1, alignItems: "center", justifyContent: "center", minHeight: 52 }, bottomNavText: { color: colors.muted, fontSize: 10, marginTop: 3 },
   qualityCard: { backgroundColor: "#102A23", borderRadius: 10, borderWidth: 1, borderColor: "#235D4A", padding: 12, marginBottom: 14 }, qualityMedium: { backgroundColor: "#3A2D1C", borderColor: "#71552D" }, qualityLow: { backgroundColor: "#351D24", borderColor: "#743D48" }, qualityTitle: { color: colors.text, fontSize: 12, fontWeight: "800", textAlign: "right", marginBottom: 4 }, qualityText: { color: colors.muted, fontSize: 12, lineHeight: 19, textAlign: "right" },
   homeHero: { backgroundColor: "#18263D", borderRadius: 18, padding: 20, borderWidth: 1, borderColor: "#3B567A", marginBottom: 16 }, homeEyebrow: { color: colors.accent, fontSize: 10, fontWeight: "800", letterSpacing: 1.2, textAlign: "right" }, homeTitle: { color: colors.text, fontSize: 28, fontWeight: "900", textAlign: "right", marginTop: 8 }, homeSubtitle: { color: colors.muted, fontSize: 13, lineHeight: 21, textAlign: "right", marginTop: 8 }, homeSectionLabel: { color: colors.muted, fontSize: 12, fontWeight: "800", textAlign: "right", marginBottom: 10 }, homeModuleGrid: { gap: 10, marginBottom: 18 }, homeModuleCard: { backgroundColor: colors.panel, borderRadius: 15, borderWidth: 1, borderColor: colors.border, padding: 14, flexDirection: "row-reverse", alignItems: "center", minHeight: 82 }, homeModuleIcon: { color: colors.accent, fontSize: 24, width: 34, textAlign: "center" }, homeModuleCopy: { flex: 1, marginHorizontal: 10 }, homeModuleTitle: { color: colors.text, fontSize: 15, fontWeight: "800", textAlign: "right" }, homeModuleDescription: { color: colors.muted, fontSize: 11, lineHeight: 18, textAlign: "right", marginTop: 3 }, homeModuleArrow: { color: colors.accent, fontSize: 17 }, selectedFileText: { color: colors.success, fontSize: 12, textAlign: "right", marginTop: 12 },
+  localWorkspaceBanner: { backgroundColor: "#142B42", borderRadius: 15, borderWidth: 1, borderColor: "#3B567A", padding: 16, marginBottom: 16 }, localWorkspaceTitle: { color: colors.accent, fontSize: 14, fontWeight: "800", textAlign: "right" }, localWorkspaceText: { color: "#C4D6EB", fontSize: 12, lineHeight: 20, textAlign: "right", marginTop: 6 },
 });
