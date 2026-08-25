@@ -25,7 +25,6 @@ import { calculateCostChain } from "../../packages/cost-engine/src/calculate";
 import { parseArabicVoiceCommand } from "../../packages/command-intake/src/parse-arabic-command";
 import { extractDocumentFields, getOcrReviewGuidance, type DocumentFields } from "./src/document-intake";
 
-const API_BASE = process.env.EXPO_PUBLIC_API_URL ?? "https://narqaebos-c2nmdy4n.manus.space";
 const AUTH_START_URL = process.env.EXPO_PUBLIC_AUTH_START_URL;
 const REDIRECT_URI = ExpoLinking.createURL("oauth/callback");
 type Tab = "home" | "cost" | "commands" | "intake" | "invoice" | "sources" | "suppliers" | "customers" | "projects" | "reports";
@@ -50,11 +49,6 @@ const operationalModules = [
   { label: "OCR والمستندات", path: "/ocr" },
   { label: "التقارير المالية", path: "/reports/export" },
 ] as const;
-
-async function openOperationalModule(path: string) {
-  await WebBrowser.openBrowserAsync(`${API_BASE}${path}`);
-}
-
 
 function Field({ label, value, onChangeText, suffix, keyboardType = "decimal-pad" }: {
   label: string; value: string; onChangeText: (value: string) => void; suffix?: string; keyboardType?: "decimal-pad" | "default";
@@ -162,7 +156,7 @@ function CommandsScreen({ quickStartId, onQuickStartConsumed }: { quickStartId: 
     setIsListening(true); ExpoSpeechRecognitionModule.start({ lang: "ar-SA", interimResults: true, maxAlternatives: 1, addsPunctuation: true, contextualStrings: ["NARQA", "EBOS", "فاتورة", "مورد", "شراء", "مصروف", "إيراد", "ضريبة", "قيد يومية"] });
   };
   const analyze = () => { if (!command.trim()) { Alert.alert("أدخل أمراً", "استخدم الميكروفون أو اكتب أمراً عربياً قبل التحليل."); return; } const parsedCommand = parseArabicVoiceCommand(command); setParsed(parsedCommand); Speech.speak(`تم تحليل الأمر. النية ${parsedCommand.intent}. راجع التفاصيل قبل الاعتماد.`, { language: "ar-SA", rate: 0.9 }); };
-  const openReview = () => Alert.alert("مراجعة مطلوبة", "لن ينفذ التطبيق أي إجراء تلقائياً. افتح وحدة الأوامر في النظام لمراجعة واعتماد المسودة.", [{ text: "فتح وحدة الأوامر", onPress: () => openOperationalModule("/commands") }, { text: "إلغاء", style: "cancel" }]);
+  const openReview = () => Alert.alert("مسودة بانتظار الربط", "تم الاحتفاظ بتحليل الأمر داخل التطبيق. لن يفتح المتصفح ولن ينفذ التطبيق أي إجراء تلقائياً. يتطلب الإرسال الرسمي جلسة جوال معتمدة وربطاً آمناً بالخادم.", [{ text: "حسناً" }]);
   useEffect(() => { if (!quickStartId) return; void startListening(); onQuickStartConsumed(); }, [quickStartId]);
   return <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
     <SectionTitle eyebrow="VOICE & TEXT COMMAND ENGINE" title="الأوامر الصوتية وتحليل النية" description="اضغط بدء الميكروفون لاستقبال الكلام العربي فعلياً، ثم راجع النص والتحليل قبل إرسال أي إجراء إلى النظام." />
@@ -193,12 +187,12 @@ function DocumentIntakeScreen() {
     <View style={styles.statusBanner}><View style={[styles.statusDot, { backgroundColor: state === "processing" ? colors.accent : colors.success }]} /><View style={styles.statusCopy}><Text style={styles.statusTitle}>{state === "processing" ? "يجري تحسين الصورة وتحليلها" : "مراجعة بشرية إلزامية"}</Text><Text style={styles.statusText}>لتحسين الدقة: صوّر المستند كاملاً بإضاءة متساوية، وتجنب الظلال والانعكاسات. الخط اليدوي يحتاج تصحيحاً يدوياً عند انخفاض الوضوح.</Text></View></View>
     <View style={styles.formCard}><View style={styles.stack}><PrimaryButton label="التقاط مستند بالكاميرا" onPress={capture} /><SecondaryButton label="اختيار صورة من الجهاز" onPress={choose} /><SecondaryButton label="اختيار مستند PDF أو صورة" onPress={chooseDocument} /></View>{selectedFile ? <Text style={styles.selectedFileText}>الملف المختار: {selectedFile}</Text> : null}{error ? <Text style={styles.inlineError}>{error}</Text> : null}</View>
     {imageUri ? <Image source={{ uri: imageUri }} resizeMode="contain" style={styles.documentPreview} /> : null}
-    {state === "review" ? <View style={styles.resultCard}><Text style={styles.resultLabel}>مسودة الاستخراج — {sourceLabel}</Text><View style={[styles.qualityCard, reviewGuidance.level === "low" && styles.qualityLow, reviewGuidance.level === "medium" && styles.qualityMedium]}><Text style={styles.qualityTitle}>مؤشر قابلية المراجعة: {reviewGuidance.level === "high" ? "جيد" : reviewGuidance.level === "medium" ? "جزئي" : "ضعيف"}</Text><Text style={styles.qualityText}>{selectedFile?.toLowerCase().endsWith(".pdf") ? "تم اختيار ملف PDF بنجاح. التحليل المتقدم للـ PDF يحتاج جلسة مصادقة لرفعه إلى مسار OCR المنشور؛ لا تُنشأ أي بيانات محلية من الملف." : reviewGuidance.message}</Text></View><Field label="المورد / الجهة" value={fields.vendorName} onChangeText={vendorName => setFields(value => ({ ...value, vendorName }))} keyboardType="default" /><Field label="المبلغ" value={fields.amount} onChangeText={amount => setFields(value => ({ ...value, amount }))} /><Field label="التاريخ" value={fields.documentDate} onChangeText={documentDate => setFields(value => ({ ...value, documentDate }))} keyboardType="default" /><Field label="الرقم الضريبي" value={fields.taxNo} onChangeText={taxNo => setFields(value => ({ ...value, taxNo }))} keyboardType="default" /><Field label="رقم المرجع" value={fields.referenceNo} onChangeText={referenceNo => setFields(value => ({ ...value, referenceNo }))} keyboardType="default" /><Text style={styles.fieldLabel}>النص الخام المستخرج</Text><TextInput value={rawText} onChangeText={setRawText} multiline textAlign="right" textAlignVertical="top" style={[styles.input, styles.commandInput]} /><Text style={styles.hintText}>لن تنشأ قيود أو سجلات مالية من هذه الشاشة. افتح وحدة OCR المنشورة بعد تسجيل الدخول للاعتماد والتسجيل في النظام.</Text><PrimaryButton label="فتح OCR المتقدم للمراجعة والاعتماد" onPress={() => openOperationalModule("/ocr")} /></View> : null}
+    {state === "review" ? <View style={styles.resultCard}><Text style={styles.resultLabel}>مسودة الاستخراج — {sourceLabel}</Text><View style={[styles.qualityCard, reviewGuidance.level === "low" && styles.qualityLow, reviewGuidance.level === "medium" && styles.qualityMedium]}><Text style={styles.qualityTitle}>مؤشر قابلية المراجعة: {reviewGuidance.level === "high" ? "جيد" : reviewGuidance.level === "medium" ? "جزئي" : "ضعيف"}</Text><Text style={styles.qualityText}>{selectedFile?.toLowerCase().endsWith(".pdf") ? "تم اختيار ملف PDF بنجاح. التحليل المتقدم للـ PDF يحتاج جلسة مصادقة لرفعه إلى مسار OCR المعتمد؛ لا تُنشأ أي بيانات محلية من الملف." : reviewGuidance.message}</Text></View><Field label="المورد / الجهة" value={fields.vendorName} onChangeText={vendorName => setFields(value => ({ ...value, vendorName }))} keyboardType="default" /><Field label="المبلغ" value={fields.amount} onChangeText={amount => setFields(value => ({ ...value, amount }))} /><Field label="التاريخ" value={fields.documentDate} onChangeText={documentDate => setFields(value => ({ ...value, documentDate }))} keyboardType="default" /><Field label="الرقم الضريبي" value={fields.taxNo} onChangeText={taxNo => setFields(value => ({ ...value, taxNo }))} keyboardType="default" /><Field label="رقم المرجع" value={fields.referenceNo} onChangeText={referenceNo => setFields(value => ({ ...value, referenceNo }))} keyboardType="default" /><Text style={styles.fieldLabel}>النص الخام المستخرج</Text><TextInput value={rawText} onChangeText={setRawText} multiline textAlign="right" textAlignVertical="top" style={[styles.input, styles.commandInput]} /><Text style={styles.hintText}>هذه مسودة مراجعة محلية. لن تفتح هذه الشاشة مساحة العمل على الإنترنت ولن تنشئ قيوداً أو سجلات مالية تلقائياً.</Text><PrimaryButton label="تأكيد المراجعة داخل التطبيق" onPress={() => Alert.alert("تمت المراجعة", "بقيت المسودة داخل التطبيق. يلزم ربط الجلسة المعتمدة قبل إرسالها إلى النظام.")} /></View> : null}
   </ScrollView>;
 }
 
 async function startNativeAuth() {
-  if (!AUTH_START_URL) { Alert.alert("إعداد المصادقة مطلوب", "أضف EXPO_PUBLIC_AUTH_START_URL إلى إعدادات البناء لتمكين OAuth الأصلي. يمكنك فتح نسخة الويب مؤقتاً.", [{ text: "فتح الويب", onPress: () => Linking.openURL(API_BASE) }, { text: "إلغاء", style: "cancel" }]); return; }
+  if (!AUTH_START_URL) { Alert.alert("إعداد المصادقة مطلوب", "أضف EXPO_PUBLIC_AUTH_START_URL إلى إعدادات البناء لتمكين OAuth الأصلي. لن يفتح التطبيق مساحة العمل على الإنترنت تلقائياً.", [{ text: "حسناً" }]); return; }
   const authUrl = `${AUTH_START_URL}${AUTH_START_URL.includes("?") ? "&" : "?"}redirectUri=${encodeURIComponent(REDIRECT_URI)}`;
   const result = await WebBrowser.openAuthSessionAsync(authUrl, REDIRECT_URI);
   if (result.type === "success" && result.url.startsWith(REDIRECT_URI)) Alert.alert("تم استلام جلسة المصادقة", "اكتملت عودة المصادقة إلى التطبيق. أكمل التحقق من الجلسة على الخادم.");
