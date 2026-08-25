@@ -205,3 +205,9 @@
 - [x] Add a manually triggered GitHub Actions workflow that runs Expo prebuild and produces an Android APK artifact
 - [x] Run the GitHub Actions workflow on ARQA-NEW main and inspect its build log
 - [x] Verify the uploaded APK artifact metadata and provide its download path
+
+## Android APK Standalone Bundle Correction
+- [x] Replace the Metro-dependent Debug APK workflow with an internal Release APK workflow that embeds index.android.bundle
+- [x] Verify the replacement APK archive contains index.android.bundle and does not require Metro
+- [x] Publish a corrected APK and update all active documentation to the standalone Release APK; static Debug storage URL remains deprecated but cannot be revoked
+- [x] Verify that the old Debug storage path remains technically reachable under static-storage policy, record it as permanently deprecated, and keep all active documentation on the standalone Release APK

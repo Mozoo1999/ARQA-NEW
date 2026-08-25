@@ -48,20 +48,23 @@
 
 محاولة إضافية لـ `assembleDebug` ببناء arm64 فقط، وNew Architecture معطلة، وGradle بذاكرة 1024MB وعامل واحد، انتهت بالنتيجة نفسها: اختفاء Gradle daemon أثناء التجميع. بعد هذه المحاولة لا يوجد ملف APK صالح في `android/app/build/outputs/apk/`؛ يلزم تنفيذ البناء على جهاز/عامل CI بذاكرة أكبر أو استخدام EAS مع حساب Expo.
 
-## APK الداخلي عبر GitHub Actions
+## APK الداخلي المستقل عبر GitHub Actions
 
-تم تجاوز قيد بيئة البناء المحلية عبر تشغيل سير العمل اليدوي [`Build Internal Android APK`](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/32789975004) على GitHub Actions. اكتمل التشغيل رقم `32789975004` بنجاح، وتم رفع ملف APK باسم `narqa-ebos-internal-apk` كملف تنزيل مؤقت لمدة 14 يوماً.
+تم تصحيح ملف Debug الأول الذي كان يعتمد على Metro؛ إذ أن النسخة المعتمدة للتثبيت الآن بُنيت من التشغيل اليدوي [`Build Internal Android APK`](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/32791994562) على GitHub Actions. اكتمل التشغيل رقم `32791994562` بنجاح، وتم رفع ملف APK باسم `narqa-ebos-internal-release-apk` كملف تنزيل مؤقت لمدة 14 يوماً.
 
 | بند التحقق | النتيجة |
 |---|---|
-| ملف التنزيل | `app-debug.apk` |
-| الحجم | 45MB تقريباً |
+| ملف التنزيل | `app-release.apk` |
+| الحجم | 25MB تقريباً |
 | معرف الحزمة | `com.narqa.ebos` |
 | الإصدار | `0.1.0` (`versionCode 1`) |
 | المعمارية المستهدفة | `arm64-v8a` |
+| حزمة JavaScript | `assets/index.android.bundle` مدمجة داخل APK؛ لا يحتاج Metro |
 | التوقيع | Android Debug، مع تحقق APK Signature Scheme v2 |
-| SHA-256 | `d50ae40ee23bed7acf4cd9deedb5508fee6cf6d516725f64b1ca43834224bd24` |
+| SHA-256 | `7996af8c91e3069436f1c95627fe65f8a21e7229d0895299029a51b35f0096ab` |
 
-> هذا APK مخصص للاختبار الداخلي، وموقع بمفتاح Android Debug، وليس نسخة متجر أو إصداراً إنتاجياً موقّعاً بمفتاح مؤسسة.
+> هذا APK مخصص للاختبار الداخلي، وموقع بمفتاح Android Debug، وليس نسخة متجر أو إصداراً إنتاجياً موقّعاً بمفتاح مؤسسة. يجب عدم استخدام ملف `app-debug.apk` السابق لأنه يعتمد على Metro.
 
-رابط التنزيل المباشر ضمن تخزين المشروع هو: `/manus-storage/NARQA-EBOS-v0.1.0-internal-arm64_a760ee84.apk`.
+رابط التنزيل المباشر للنسخة المستقلة هو: `/manus-storage/NARQA-EBOS-v0.1.0-standalone-release-arm64_bfc5fc47.apk`.
+
+> يبقى رابط ملف Debug السابق قابلاً للوصول بسبب سياسة التخزين الثابت للمشروع، لكنه **مهمل وغير صالح للاستخدام المستقل**. جميع الوثائق الحالية تشير حصراً إلى ملف Release المستقل.

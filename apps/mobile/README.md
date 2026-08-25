@@ -52,8 +52,8 @@ npx eas build --platform ios --profile production
 
 بعد نجاح `assembleDebug` أو `assembleRelease`، يكون الملف عادةً داخل `android/app/build/outputs/apk/`. انقل ملف APK إلى الهاتف، فعّل السماح بالتثبيت من هذا المصدر عند طلب Android ذلك، ثم افتح الملف واضغط تثبيت. يجب حذف النسخ التجريبية القديمة إذا تعارضت مع المعرّف `com.narqa.ebos`. لا تُستخدم هذه الخطوات حالياً لتقديم ملف تنزيل؛ فمحاولة البناء الحالية لم تنتج APK بسبب توقف Gradle daemon أثناء تهيئة Expo/NDK، كما هو موثق في `MOBILE-VALIDATION.md`.
 
-### تنزيل النسخة الداخلية الجاهزة
+### تنزيل النسخة الداخلية المستقلة
 
-تتوفر نسخة اختبارية داخلية من خلال [تشغيل GitHub Actions الناجح](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/32789975004). افتح الرابط، ثم اختر قسم **Artifacts** ونزّل `narqa-ebos-internal-apk`. فك ضغط الملف للحصول على `app-debug.apk`، وانقله إلى هاتف Android (بمعمارية arm64)، ثم وافق على تنبيه **السماح بالتثبيت من هذا المصدر** الذي يظهر من مدير الملفات. احتفظ بملف APK مع قيمة SHA-256 المسجلة في `MOBILE-VALIDATION.md` للتحقق من سلامة النقل.
+تتوفر النسخة المصححة من خلال [تشغيل GitHub Actions الناجح](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/32791994562). افتح الرابط، ثم اختر قسم **Artifacts** ونزّل `narqa-ebos-internal-release-apk`. فك ضغط الملف للحصول على `app-release.apk`، وانقله إلى هاتف Android (بمعمارية arm64)، ثم وافق على تنبيه **السماح بالتثبيت من هذا المصدر** الذي يظهر من مدير الملفات. تتضمن هذه النسخة `index.android.bundle` داخل التطبيق، لذلك لا تحتاج إلى Metro أو اتصال USB أو Wi-Fi بجهاز التطوير. احتفظ بملف APK مع قيمة SHA-256 المسجلة في `MOBILE-VALIDATION.md` للتحقق من سلامة النقل.
 
-يتوفر أيضاً [رابط تنزيل مباشر لملف APK الداخلي](/manus-storage/NARQA-EBOS-v0.1.0-internal-arm64_a760ee84.apk). هذا ملف اختبار داخلي موقّع بمفتاح Debug ولا يُستخدم للنشر على المتاجر.
+يتوفر أيضاً [رابط تنزيل مباشر لملف APK Release المستقل](/manus-storage/NARQA-EBOS-v0.1.0-standalone-release-arm64_bfc5fc47.apk). لا تستخدم ملف `app-debug.apk` السابق؛ فقد كان يعتمد على Metro. هذا ملف اختبار داخلي موقّع بمفتاح Debug ولا يُستخدم للنشر على المتاجر.
