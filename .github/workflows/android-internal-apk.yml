@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   build-internal-apk:
-    name: Build debug APK
+    name: Build standalone release APK
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
@@ -43,17 +43,20 @@ jobs:
       - name: Generate Android project
         run: pnpm --dir apps/mobile exec expo prebuild --platform android --no-install --clean
 
-      - name: Build internal debug APK
+      - name: Build standalone internal release APK
         working-directory: apps/mobile/android
-        run: ./gradlew assembleDebug --no-daemon --max-workers=2 -PreactNativeArchitectures=arm64-v8a
+        run: ./gradlew assembleRelease --no-daemon --max-workers=2 -PreactNativeArchitectures=arm64-v8a
 
-      - name: Verify APK artifact
-        run: test -f apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Verify standalone APK artifact
+        run: |
+          APK=apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+          test -f "$APK"
+          unzip -l "$APK" | grep -q 'assets/index.android.bundle'
 
-      - name: Upload internal APK
+      - name: Upload standalone internal APK
         uses: actions/upload-artifact@v4
         with:
-          name: narqa-ebos-internal-apk
-          path: apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          name: narqa-ebos-internal-release-apk
+          path: apps/mobile/android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14
