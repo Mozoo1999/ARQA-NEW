@@ -11,6 +11,12 @@ export type OcrReviewGuidance = {
   message: string;
 };
 
+export type PdfReviewDraft = {
+  rawText: string;
+  fields: DocumentFields;
+  note: string;
+};
+
 export function toLatinDigits(value: string) {
   return value.replace(/[٠-٩]/g, digit => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)));
 }
@@ -18,8 +24,8 @@ export function toLatinDigits(value: string) {
 export function extractDocumentFields(rawText: string): DocumentFields {
   const text = toLatinDigits(rawText).replace(/\u066B/g, ".").replace(/\u066C/g, ",");
   const lines = rawText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
-  const amount = text.match(/(?:الإجمالي|المبلغ|اجمالي|total|amount)[^\d]{0,18}(\d{1,3}(?:[,\s]\d{3})*(?:\.\d{1,2})?)/i)?.[1]
-    ?? text.match(/\b(\d{1,3}(?:[,\s]\d{3})+(?:\.\d{1,2})?)\b/)?.[1] ?? "";
+  const amount = text.match(/(?:الإجمالي|المبلغ|اجمالي|total|amount)[^\d]{0,18}(\d+(?:[,\s]\d{3})*(?:\.\d{1,2})?)/i)?.[1]
+    ?? text.match(/\b(\d+(?:[,\s]\d{3})+(?:\.\d{1,2})?)\b/)?.[1] ?? "";
   const documentDate = text.match(/\b(\d{1,4}[\/-]\d{1,2}[\/-]\d{1,4})\b/)?.[1] ?? "";
   const taxNo = text.match(/(?:الضريبي|ضريبة|tax\s*(?:no|number|id)?)[^\d]{0,18}(\d{6,20})/i)?.[1] ?? "";
   const referenceNo = text.match(/(?:فاتورة|مرجع|invoice|ref(?:erence)?)[^\w\d]{0,18}([A-Z0-9\/-]{4,})/i)?.[1] ?? "";
@@ -37,4 +43,13 @@ export function getOcrReviewGuidance(rawText: string, fields: DocumentFields): O
     return { level: "medium", message: "الاستخراج جزئي. راجع المبلغ والتاريخ والرقم المرجعي مقابل الصورة قبل الإرسال للمراجعة." };
   }
   return { level: "high", message: "النص والحقول الأولية متماسكة، لكنها مسودة فقط: طابق القيم مع الصورة قبل اعتمادها." };
+}
+
+export function createPdfReviewDraft(extractedText: string): PdfReviewDraft {
+  const rawText = extractedText.trim();
+  const fields = extractDocumentFields(rawText);
+  const note = rawText
+    ? "تم استخراج النص من PDF داخل التطبيق. راجع الحقول أدناه قبل الاعتماد."
+    : "لا يحتوي هذا PDF على نص قابل للاستخراج، وغالباً أنه ملف ممسوح ضوئياً. حوّل صفحاته إلى صور واضحة لتحليلها محلياً، أو استخدم مسار AI المعتمد بعد تسجيل الدخول.";
+  return { rawText, fields, note };
 }
