@@ -2,7 +2,7 @@
 
 ## Build evidence
 
-The current internal Android Release APK was built successfully by GitHub Actions run [32850117085](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/32850117085) from commit `1482e9e`. This build includes local in-app operational navigation, the invoice-draft screen, native Arabic speech recognition, a home-screen quick action for voice commands, native image selection/capture, document selection for PDF and supported images, on-device OCR, and the editable OCR review guidance indicator.
+The current internal Android Release APK was built successfully by GitHub Actions run [32869901649](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/32869901649) from commit `3dacd4d`. This build includes local in-app operational navigation, the invoice-draft screen, native Arabic speech recognition, a home-screen quick action for voice commands, native image selection/capture, document selection for PDF and supported images, on-device OCR, and the editable OCR review guidance indicator.
 
 | Check | Verified result |
 |---|---|
@@ -11,8 +11,8 @@ The current internal Android Release APK was built successfully by GitHub Action
 | Architecture | `arm64-v8a` |
 | JavaScript bundle | `assets/index.android.bundle` is embedded; Metro is not required |
 | Signature | APK Signature Scheme v2 verified |
-| SHA-256 | `f137a46ccdbbb5f8cefe9b0b08fd42afa8e01c233ed0eb1efcd6b3c9adcce717` |
-| Download path | `/manus-storage/NARQA-EBOS-v0.1.0-voice-shortcut-inapp-arm64_8b8b3ae3.apk` |
+| SHA-256 | `a1885db3a8f5a886013bd8768f1f46925055c3391869c88dd62a2a0c8d7e7a56` |
+| Download path | `/manus-storage/NARQA-EBOS-v0.1.0-in-app-only-arm64_d867bb50.apk` |
 
 ## Voice intake behavior
 
@@ -22,7 +22,7 @@ The app icon offers a system quick action labelled **بدء أمر صوتي** af
 
 ## In-app navigation behavior
 
-The home screen opens its operations spaces inside the mobile application. Sources, suppliers, customer contacts, projects, reports, and invoice drafting no longer open the web workspace when selected. Where live records require a native authenticated data session that has not yet been configured, the application states that condition in-app and does not fabricate data. The invoice screen validates a local review draft and never posts an official invoice or accounting entry automatically.
+The home screen opens its operations spaces inside the mobile application. Sources, suppliers, customer contacts, projects, reports, and invoice drafting no longer open the web workspace when selected. Voice-command review and OCR review no longer contain browser-opening actions either; they retain a local review state and explain that a native authenticated handoff is required before official submission. The only remaining browser session is the user-initiated OAuth sign-in call when `EXPO_PUBLIC_AUTH_START_URL` is configured. Where live records require a native authenticated data session that has not yet been configured, the application states that condition in-app and does not fabricate data. The invoice screen validates a local review draft and never posts an official invoice or accounting entry automatically.
 
 ## Document intake behavior
 
