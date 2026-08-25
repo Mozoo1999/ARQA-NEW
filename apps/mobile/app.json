@@ -18,6 +18,7 @@
       "bundleIdentifier": "com.narqa.ebos",
       "infoPlist": {
         "NSMicrophoneUsageDescription": "يستخدم NARQA EBOS الميكروفون لاستقبال الأوامر الصوتية بعد إذن المستخدم.",
+        "NSSpeechRecognitionUsageDescription": "يستخدم NARQA EBOS التعرف على الكلام لتحويل الأوامر العربية إلى نص قابل للمراجعة.",
         "NSCameraUsageDescription": "يستخدم NARQA EBOS الكاميرا لالتقاط الإيصالات والمستندات لمراجعتها.",
         "NSPhotoLibraryUsageDescription": "يستخدم NARQA EBOS مكتبة الصور لاختيار مستندات الإدخال.",
         "UIRequiresFullScreen": false
@@ -39,7 +40,16 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-image-picker",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "اسمح لـ $(PRODUCT_NAME) باستخدام الميكروفون لاستقبال الأوامر الصوتية.",
+          "speechRecognitionPermission": "اسمح لـ $(PRODUCT_NAME) بتحويل الأوامر الصوتية إلى نص للمراجعة.",
+          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox", "com.google.android.as"]
+        }
+      ]
     ],
     "extra": {
       "apiBaseUrl": "https://narqaebos-c2nmdy4n.manus.space"
