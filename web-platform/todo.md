@@ -288,12 +288,12 @@
 - [ ] Add automated tests for successful and rejected draft submission paths and rebuild a standalone APK
 
 ## Vehicle Loads, Receiving Notes, and Executable Voice Intake
-- [ ] Audit existing customer, vehicle, inventory, smart-intake, and audit-log entities against the required vehicle-load and receiving-note workflow
-- [ ] Add normalized records for vehicles, vehicle-load drafts, receiving notes, line quantities, prices, source material types, and client associations
-- [ ] Record entry timestamp, authenticated user, entry method, source document, analysis provenance, and confirmation status for every draft and posted record
-- [ ] Build server matching logic that compares each vehicle draft to customer and vehicle records and reports unentered or unmatched quantities
-- [ ] Create a structured NARQA AI extraction contract for vehicle loads and receiving notes, including vehicle, client, raw material, price, date, and quantity
-- [ ] Present extracted load/receiving fields, match results, discrepancies, and approval actions in the mobile app before persistence
-- [ ] Convert a confirmed voice command into a typed operational draft and apply only the permitted database operation after explicit confirmation
-- [ ] Configure the long-press application shortcut to immediately open and start the voice draft flow, subject to device permission and operating-system limits
+- [x] Audit existing customer, vehicle, inventory, smart-intake, and audit-log entities against the required vehicle-load and receiving-note workflow
+- [x] Add normalized records for vehicles, vehicle-load drafts, receiving notes, line quantities, prices, source material types, and client associations
+- [x] Record entry timestamp, authenticated user, entry method, source document, analysis provenance, and confirmation status for every draft and posted record
+- [x] Build server matching logic that compares each vehicle draft to customer and vehicle records and reports unentered or unmatched quantities
+- [x] Create a structured NARQA AI extraction contract for vehicle loads and receiving notes, including vehicle, client, raw material, price, date, and quantity
+- [x] Present extracted load/receiving fields, match results, discrepancies, and approval actions in the mobile app before persistence
+- [x] Convert a confirmed voice command into a typed operational draft and apply only the permitted database operation after explicit confirmation
+- [x] Configure the long-press application shortcut to immediately open and start the voice draft flow, subject to device permission and operating-system limits
 - [ ] Add schema, API, authorization, matching, analysis, and confirmation tests; build and test the updated APK on a physical device
