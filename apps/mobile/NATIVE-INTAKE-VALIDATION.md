@@ -43,3 +43,7 @@ The OCR screen lets the user capture a document, select an image, or select a su
 ## Device validation required
 
 Build and archive checks do not substitute for a physical-device test. Install this APK after removing the prior version, allow microphone/camera/photo permissions when requested, speak a short Arabic command, and capture a well-lit receipt. Report any device-specific recognition-service or extraction error with a screenshot.
+
+## Vehicle loads and receiving notes
+
+The operational intake flow now analyses a voice transcript, image, or PDF-derived text into an editable **vehicle-load** or **receiving-note** proposal. The reviewer corrects client, vehicle plate, material, date, quantity, unit, and price before confirmation. Confirmation records the authenticated user, timestamp, entry method, source analysis, and confirmation state. The server matches the confirmed quantity to client and vehicle records, creates missing customer/vehicle references only after the user explicitly permits it, and returns the quantity that remains unentered in receiving notes. The APK was built by [GitHub Actions run 32972242646](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/32972242646), has SHA-256 `d8d0b1e18889eaa8e614ff58e25ec8a5ed694498388fe5f20a3db7428c135332`, and is available at `/manus-storage/NARQA-EBOS-v0.1.0-vehicle-loads-receiving-notes-arm64_a253da18.apk`.

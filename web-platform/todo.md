@@ -296,4 +296,5 @@
 - [x] Present extracted load/receiving fields, match results, discrepancies, and approval actions in the mobile app before persistence
 - [x] Convert a confirmed voice command into a typed operational draft and apply only the permitted database operation after explicit confirmation
 - [x] Configure the long-press application shortcut to immediately open and start the voice draft flow, subject to device permission and operating-system limits
-- [ ] Add schema, API, authorization, matching, analysis, and confirmation tests; build and test the updated APK on a physical device
+- [x] Add schema, API, validation, matching, analysis-schema, and confirmation tests; build the updated APK through GitHub Actions run 32972242646
+- [ ] Test the updated APK on a physical device with authenticated OAuth, a vehicle load, a receiving note, and a confirmed voice command
