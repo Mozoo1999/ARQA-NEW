@@ -11,7 +11,8 @@ describe("native in-app navigation policy", () => {
   });
 
   it("keeps OAuth browser use explicit and isolated to the sign-in flow", () => {
-    expect(appSource).toContain("openAuthSessionAsync(authUrl, REDIRECT_URI)");
-    expect(appSource).toContain("لن يفتح التطبيق مساحة العمل على الإنترنت تلقائياً");
+    expect(appSource).toContain("openAuthSessionAsync(authorizationUrl, REDIRECT_URI)");
+    expect(appSource).toContain("SecureStore.setItemAsync(SESSION_TOKEN_KEY, token)");
+    expect(appSource).toContain("لم يجهز الخادم جلسة OAuth الجوالية");
   });
 });

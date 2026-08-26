@@ -1,0 +1,20 @@
+CREATE TABLE `smart_intake_drafts` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`sourceType` enum('ocr','voice_command','whatsapp') NOT NULL,
+	`title` varchar(256) NOT NULL,
+	`intent` varchar(64) NOT NULL,
+	`vendorName` varchar(256),
+	`amount` decimal(12,2),
+	`currency` varchar(8) DEFAULT 'EGP',
+	`documentDate` varchar(32),
+	`referenceNo` varchar(64),
+	`taxNo` varchar(64),
+	`rawContent` text NOT NULL,
+	`confidence` decimal(5,4),
+	`status` enum('pending_review','approved','rejected','posted_to_ledger') NOT NULL DEFAULT 'pending_review',
+	`reviewerId` int,
+	`metadata` json,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `smart_intake_drafts_id` PRIMARY KEY(`id`)
+);
