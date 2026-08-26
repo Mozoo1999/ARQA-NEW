@@ -279,3 +279,10 @@
 - [x] Route mobile OAuth through an allowed public callback endpoint before returning the verified Bearer token to the NARQA deep link
 - [ ] Verify OAuth start, provider redirect, callback exchange, nonce validation, and return to `narqa-ebos://oauth/callback`
 - [x] Rebuild APK and document the corrected OAuth callback configuration
+
+## Professional Intake Review and Voice Draft Execution
+- [ ] Replace generic OCR guidance with a compact analysis status, extracted-value confidence, and next-action panel
+- [ ] Add explicit local review actions for correcting fields, saving a draft, and submitting an approved draft with a visible database result
+- [ ] Make voice-command submission require and display authenticated state before enabling database insertion
+- [ ] Surface a structured success or failure result with draft ID after user-confirmed voice and document submission
+- [ ] Add automated tests for successful and rejected draft submission paths and rebuild a standalone APK
