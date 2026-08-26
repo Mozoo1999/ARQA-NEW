@@ -2,7 +2,7 @@
 
 ## Build evidence
 
-The current internal Android Release APK was built successfully by GitHub Actions run [32895159099](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/32895159099) from commit `b82aac7`. This build includes local in-app operational navigation, the invoice-draft screen, native Arabic speech recognition, a home-screen quick action for voice commands, native image selection/capture, document selection for PDF and supported images, on-device OCR, native digital-PDF text extraction, and the editable OCR review guidance indicator.
+The current internal Android Release APK was built successfully by GitHub Actions run [32959823559](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/32959823559) from commit `0f21640`. This build includes local in-app operational navigation, the invoice-draft screen, native Arabic speech recognition, a home-screen quick action for voice commands, native image selection/capture, document selection for PDF and supported images, on-device OCR, native digital-PDF text extraction, editable OCR review guidance, mobile OAuth Bearer sessions, live database reads, draft submission, and server-side NARQA AI analysis after explicit user review.
 
 | Check | Verified result |
 |---|---|
@@ -11,8 +11,8 @@ The current internal Android Release APK was built successfully by GitHub Action
 | Architecture | `arm64-v8a` |
 | JavaScript bundle | `assets/index.android.bundle` is embedded; Metro is not required |
 | Signature | APK Signature Scheme v2 verified |
-| SHA-256 | `efc858a6deb5a984e45ada263c52659c1567ab3377e6a07f8e5b4884c5be0ece` |
-| Download path | `/manus-storage/NARQA-EBOS-v0.1.0-native-pdf-analysis-arm64_cbb7cbb6.apk` |
+| SHA-256 | `c5ed6095bb10dc5537b4746cd5c631039c9c56c3673626dca19dcbe601e7f2ba` |
+| Download path | `/manus-storage/NARQA-EBOS-v0.1.0-backend-ai-arm64_61cd6ac7.apk` |
 
 ## Voice intake behavior
 
@@ -22,7 +22,11 @@ The app icon offers a system quick action labelled **بدء أمر صوتي** af
 
 ## In-app navigation behavior
 
-The home screen opens its operations spaces inside the mobile application. Sources, suppliers, customer contacts, projects, reports, and invoice drafting no longer open the web workspace when selected. Voice-command review and OCR review no longer contain browser-opening actions either; they retain a local review state and explain that a native authenticated handoff is required before official submission. The only remaining browser session is the user-initiated OAuth sign-in call when `EXPO_PUBLIC_AUTH_START_URL` is configured. Where live records require a native authenticated data session that has not yet been configured, the application states that condition in-app and does not fabricate data. The invoice screen validates a local review draft and never posts an official invoice or accounting entry automatically.
+The home screen opens its operations spaces inside the mobile application. Sources, suppliers, customer contacts, projects, reports, and invoice drafting no longer open the web workspace when selected. Voice-command review and OCR review stay inside the application. The sole browser session is the explicit user-selected OAuth sign-in, which returns to `narqa-ebos://oauth/callback`, verifies a nonce, and stores a Bearer session in secure storage. Authenticated screens load live supplier, project, contact, report, and draft data from the server. The invoice screen still validates a local review draft and never posts an official invoice or accounting entry automatically.
+
+## Backend and project-AI behavior
+
+After mobile OAuth completes, the application calls the protected mobile endpoints for current operational data and for draft submission. Voice text and locally extracted image/PDF text are sent to the NARQA AI server endpoint only after the user chooses **تحليل عبر نموذج NARQA AI**. The server returns structured, editable review fields and never persists a financial or accounting result until the user explicitly chooses to create a `pending_review` draft. The model receives extracted text, not a direct local file path or an app-embedded API key.
 
 ## Native PDF analysis
 
