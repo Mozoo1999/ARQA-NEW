@@ -360,3 +360,158 @@ export const smartIntakeDrafts = mysqlTable("smart_intake_drafts", {
 
 export type SmartIntakeDraft = typeof smartIntakeDrafts.$inferSelect;
 export type InsertSmartIntakeDraft = typeof smartIntakeDrafts.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OPERATIONAL LOGISTICS INTAKE
+// Vehicle loads and receiving notes are separate from generic smart-intake
+// drafts so every confirmed quantity remains traceable to a client, vehicle,
+// user, input channel and source analysis.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const customers = mysqlTable("customers", {
+  id: int("id").autoincrement().primaryKey(),
+  code: varchar("code", { length: 32 }).notNull().unique(),
+  name: varchar("name", { length: 256 }).notNull(),
+  registrationNumber: varchar("registrationNumber", { length: 64 }),
+  taxNumber: varchar("taxNumber", { length: 64 }),
+  contactPerson: varchar("contactPerson", { length: 128 }),
+  email: varchar("email", { length: 320 }),
+  phone: varchar("phone", { length: 32 }),
+  address: text("address"),
+  status: mysqlEnum("status", ["active", "inactive", "blocked"]).default("active").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Customer = typeof customers.$inferSelect;
+export type InsertCustomer = typeof customers.$inferInsert;
+
+export const vehicles = mysqlTable("vehicles", {
+  id: int("id").autoincrement().primaryKey(),
+  plateNumber: varchar("plateNumber", { length: 64 }).notNull().unique(),
+  customerId: int("customerId").references(() => customers.id),
+  fleetCode: varchar("fleetCode", { length: 64 }),
+  driverName: varchar("driverName", { length: 128 }),
+  driverPhone: varchar("driverPhone", { length: 32 }),
+  capacityQuantity: decimal("capacityQuantity", { precision: 14, scale: 3 }),
+  capacityUnit: varchar("capacityUnit", { length: 32 }),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Vehicle = typeof vehicles.$inferSelect;
+export type InsertVehicle = typeof vehicles.$inferInsert;
+
+export const materialTypes = mysqlTable("material_types", {
+  id: int("id").autoincrement().primaryKey(),
+  code: varchar("code", { length: 64 }).notNull().unique(),
+  name: varchar("name", { length: 256 }).notNull(),
+  unit: varchar("unit", { length: 32 }).notNull(),
+  description: text("description"),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type MaterialType = typeof materialTypes.$inferSelect;
+export type InsertMaterialType = typeof materialTypes.$inferInsert;
+
+export const vehicleLoadDrafts = mysqlTable("vehicle_load_drafts", {
+  id: int("id").autoincrement().primaryKey(),
+  draftNumber: varchar("draftNumber", { length: 40 }).notNull().unique(),
+  customerId: int("customerId").notNull().references(() => customers.id),
+  vehicleId: int("vehicleId").notNull().references(() => vehicles.id),
+  smartIntakeDraftId: int("smartIntakeDraftId").references(() => smartIntakeDrafts.id),
+  loadDate: timestamp("loadDate").notNull(),
+  referenceNo: varchar("referenceNo", { length: 100 }),
+  sourceDocumentUrl: text("sourceDocumentUrl"),
+  sourceDocumentName: varchar("sourceDocumentName", { length: 256 }),
+  entryMethod: mysqlEnum("entryMethod", ["voice", "camera", "image", "pdf", "manual"]).notNull(),
+  analysisModel: varchar("analysisModel", { length: 128 }),
+  analysisConfidence: decimal("analysisConfidence", { precision: 5, scale: 4 }),
+  analysisPayload: json("analysisPayload"),
+  rawContent: text("rawContent").notNull(),
+  status: mysqlEnum("status", ["pending_review", "matched", "confirmed", "rejected", "received"]).default("pending_review").notNull(),
+  createdByUserId: int("createdByUserId").notNull().references(() => users.id),
+  confirmedByUserId: int("confirmedByUserId").references(() => users.id),
+  confirmedAt: timestamp("confirmedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type VehicleLoadDraft = typeof vehicleLoadDrafts.$inferSelect;
+export type InsertVehicleLoadDraft = typeof vehicleLoadDrafts.$inferInsert;
+
+export const vehicleLoadLines = mysqlTable("vehicle_load_lines", {
+  id: int("id").autoincrement().primaryKey(),
+  vehicleLoadDraftId: int("vehicleLoadDraftId").notNull().references(() => vehicleLoadDrafts.id),
+  materialTypeId: int("materialTypeId").references(() => materialTypes.id),
+  materialName: varchar("materialName", { length: 256 }).notNull(),
+  quantity: decimal("quantity", { precision: 14, scale: 3 }).notNull(),
+  unit: varchar("unit", { length: 32 }).notNull(),
+  unitPrice: decimal("unitPrice", { precision: 15, scale: 2 }),
+  totalPrice: decimal("totalPrice", { precision: 15, scale: 2 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type VehicleLoadLine = typeof vehicleLoadLines.$inferSelect;
+export type InsertVehicleLoadLine = typeof vehicleLoadLines.$inferInsert;
+
+export const receivingNotes = mysqlTable("receiving_notes", {
+  id: int("id").autoincrement().primaryKey(),
+  receiptNumber: varchar("receiptNumber", { length: 40 }).notNull().unique(),
+  customerId: int("customerId").notNull().references(() => customers.id),
+  vehicleId: int("vehicleId").references(() => vehicles.id),
+  vehicleLoadDraftId: int("vehicleLoadDraftId").references(() => vehicleLoadDrafts.id),
+  receiptDate: timestamp("receiptDate").notNull(),
+  referenceNo: varchar("referenceNo", { length: 100 }),
+  sourceDocumentUrl: text("sourceDocumentUrl"),
+  sourceDocumentName: varchar("sourceDocumentName", { length: 256 }),
+  entryMethod: mysqlEnum("entryMethod", ["voice", "camera", "image", "pdf", "manual"]).notNull(),
+  analysisModel: varchar("analysisModel", { length: 128 }),
+  analysisConfidence: decimal("analysisConfidence", { precision: 5, scale: 4 }),
+  analysisPayload: json("analysisPayload"),
+  status: mysqlEnum("status", ["pending_review", "confirmed", "rejected"]).default("pending_review").notNull(),
+  createdByUserId: int("createdByUserId").notNull().references(() => users.id),
+  confirmedByUserId: int("confirmedByUserId").references(() => users.id),
+  confirmedAt: timestamp("confirmedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ReceivingNote = typeof receivingNotes.$inferSelect;
+export type InsertReceivingNote = typeof receivingNotes.$inferInsert;
+
+export const receivingNoteLines = mysqlTable("receiving_note_lines", {
+  id: int("id").autoincrement().primaryKey(),
+  receivingNoteId: int("receivingNoteId").notNull().references(() => receivingNotes.id),
+  materialTypeId: int("materialTypeId").references(() => materialTypes.id),
+  materialName: varchar("materialName", { length: 256 }).notNull(),
+  quantity: decimal("quantity", { precision: 14, scale: 3 }).notNull(),
+  unit: varchar("unit", { length: 32 }).notNull(),
+  unitPrice: decimal("unitPrice", { precision: 15, scale: 2 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ReceivingNoteLine = typeof receivingNoteLines.$inferSelect;
+export type InsertReceivingNoteLine = typeof receivingNoteLines.$inferInsert;
+
+export const operationalInputEvents = mysqlTable("operational_input_events", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  entryMethod: mysqlEnum("entryMethod", ["voice", "camera", "image", "pdf", "manual"]).notNull(),
+  sourceType: mysqlEnum("sourceType", ["vehicle_load", "receiving_note", "voice_command"]).notNull(),
+  sourceEntityId: int("sourceEntityId"),
+  smartIntakeDraftId: int("smartIntakeDraftId").references(() => smartIntakeDrafts.id),
+  commandText: text("commandText"),
+  analysisModel: varchar("analysisModel", { length: 128 }),
+  analysisConfidence: decimal("analysisConfidence", { precision: 5, scale: 4 }),
+  action: varchar("action", { length: 128 }).notNull(),
+  outcome: mysqlEnum("outcome", ["pending_review", "confirmed", "rejected", "failed"]).notNull(),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type OperationalInputEvent = typeof operationalInputEvents.$inferSelect;
+export type InsertOperationalInputEvent = typeof operationalInputEvents.$inferInsert;
