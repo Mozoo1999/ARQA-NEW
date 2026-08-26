@@ -32,6 +32,7 @@ import { createPdfReviewDraft, extractDocumentFields, getOcrReviewGuidance, type
 
 const REDIRECT_URI = ExpoLinking.createURL("oauth/callback");
 const API_BASE_URL = String(Constants.expoConfig?.extra?.apiBaseUrl ?? "").replace(/\/$/, "");
+const OAUTH_CALLBACK_ORIGIN = String(Constants.expoConfig?.extra?.webOrigin ?? "").replace(/\/$/, "");
 const SESSION_TOKEN_KEY = "narqa_mobile_session_token";
 const SESSION_USER_KEY = "narqa_mobile_session_user";
 type Tab = "home" | "cost" | "commands" | "intake" | "invoice" | "sources" | "suppliers" | "customers" | "projects" | "reports";
@@ -85,9 +86,9 @@ async function submitMobileDraft(input: { sourceType: "ocr" | "voice_command"; t
 }
 
 async function startNativeAuth(): Promise<MobileUser | null> {
-  if (!API_BASE_URL) { Alert.alert("إعداد الاتصال مطلوب", "رابط خادم NARQA EBOS غير متوفر في إعدادات التطبيق."); return null; }
+  if (!API_BASE_URL || !OAUTH_CALLBACK_ORIGIN) { Alert.alert("إعداد الاتصال مطلوب", "رابط خادم NARQA أو نطاق OAuth العام غير متوفر في إعدادات التطبيق."); return null; }
   const nonce = Crypto.randomUUID();
-  const startResponse = await fetch(`${API_BASE_URL}/api/mobile/oauth/start?redirectUri=${encodeURIComponent(REDIRECT_URI)}&nonce=${encodeURIComponent(nonce)}`);
+  const startResponse = await fetch(`${API_BASE_URL}/api/mobile/oauth/start?redirectUri=${encodeURIComponent(REDIRECT_URI)}&nonce=${encodeURIComponent(nonce)}&callbackOrigin=${encodeURIComponent(OAUTH_CALLBACK_ORIGIN)}`);
   if (!startResponse.ok) { Alert.alert("تعذر بدء تسجيل الدخول", "لم يجهز الخادم جلسة OAuth الجوالية. حاول لاحقاً."); return null; }
   const { authorizationUrl } = await startResponse.json() as { authorizationUrl?: string };
   if (!authorizationUrl) { Alert.alert("تعذر بدء تسجيل الدخول", "لم يعُد الخادم بعنوان المصادقة المطلوب."); return null; }

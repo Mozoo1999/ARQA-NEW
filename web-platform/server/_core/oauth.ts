@@ -26,10 +26,15 @@ function decodeMobileOAuthState(value: string): MobileOAuthState | null {
   }
 }
 
-function getRequestOrigin(req: Request) {
-  const host = req.get("host");
-  if (!host) throw new Error("Missing request host");
-  return `${req.protocol}://${host}`;
+function getAllowedMobileCallbackOrigin(value: string | undefined) {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" || !/^[a-z0-9-]+\.manus\.space$/i.test(url.host) || url.pathname !== "/" || url.search || url.hash) return null;
+    return url.origin;
+  } catch {
+    return null;
+  }
 }
 
 function getQueryParam(req: Request, key: string): string | undefined {
@@ -41,7 +46,8 @@ export function registerOAuthRoutes(app: Express) {
   app.get("/api/mobile/oauth/start", (req: Request, res: Response) => {
     const redirectUri = getQueryParam(req, "redirectUri");
     const nonce = getQueryParam(req, "nonce");
-    if (redirectUri !== MOBILE_REDIRECT_URI || !nonce || nonce.length < 24 || nonce.length > 256) {
+    const callbackOrigin = getAllowedMobileCallbackOrigin(getQueryParam(req, "callbackOrigin"));
+    if (redirectUri !== MOBILE_REDIRECT_URI || !nonce || nonce.length < 24 || nonce.length > 256 || !callbackOrigin) {
       res.status(400).json({ error: "Invalid mobile OAuth redirect or nonce" });
       return;
     }
@@ -51,7 +57,7 @@ export function registerOAuthRoutes(app: Express) {
     }
     const authorizationUrl = new URL("/app-auth", ENV.oAuthPortalUrl);
     authorizationUrl.searchParams.set("appId", ENV.appId);
-    authorizationUrl.searchParams.set("redirectUri", new URL("/api/mobile/oauth/callback", getRequestOrigin(req)).toString());
+    authorizationUrl.searchParams.set("redirectUri", new URL("/api/mobile/oauth/callback", callbackOrigin).toString());
     authorizationUrl.searchParams.set("state", encodeMobileOAuthState({ redirectUri, nonce }));
     authorizationUrl.searchParams.set("type", "signIn");
     res.json({ authorizationUrl: authorizationUrl.toString() });
@@ -148,4 +154,4 @@ export function registerOAuthRoutes(app: Express) {
   });
 }
 
-export const __mobileOAuthTestUtils = { encodeMobileOAuthState, decodeMobileOAuthState, MOBILE_REDIRECT_URI };
+export const __mobileOAuthTestUtils = { encodeMobileOAuthState, decodeMobileOAuthState, getAllowedMobileCallbackOrigin, MOBILE_REDIRECT_URI };

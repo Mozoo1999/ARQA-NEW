@@ -273,3 +273,9 @@
 - [x] Route approved voice, image, document, and PDF text analysis to the project AI model through server-side APIs with human review before persistence
 - [ ] Add integration tests covering authorization, live data reads, OAuth callback completion, and approved analysis submission from a real mobile bearer session
 - [ ] Build and verify a standalone APK against the authenticated backend and document any remaining iOS or secret prerequisites
+
+## Mobile OAuth Redirect URI Correction
+- [x] Identify the rejected backend callback (`*.a.run.app`) and the required public frontend callback on `narqaebos-c2nmdy4n.manus.space`
+- [ ] Route mobile OAuth through an allowed callback endpoint before returning the verified Bearer token to the NARQA deep link
+- [ ] Verify OAuth start, provider redirect, callback exchange, nonce validation, and return to `narqa-ebos://oauth/callback`
+- [ ] Rebuild APK and document the corrected OAuth callback configuration

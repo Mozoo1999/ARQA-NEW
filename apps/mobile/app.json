@@ -76,7 +76,8 @@
       ]
     ],
     "extra": {
-      "apiBaseUrl": "https://narqaebos-c2nmdy4n.manus.space"
+      "apiBaseUrl": "https://narqaebos-c2nmdy4n.manus.space",
+      "webOrigin": "https://narqaebos-c2nmdy4n.manus.space"
     }
   }
 }

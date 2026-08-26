@@ -23,3 +23,15 @@ describe("mobile OAuth state", () => {
     expect(__mobileOAuthTestUtils.decodeMobileOAuthState(shortNonce)).toBeNull();
   });
 });
+
+describe("mobile OAuth callback origin", () => {
+  it("accepts the public manus.space frontend origin instead of inferring the backend host", () => {
+    expect(__mobileOAuthTestUtils.getAllowedMobileCallbackOrigin("https://narqaebos-c2nmdy4n.manus.space")).toBe("https://narqaebos-c2nmdy4n.manus.space");
+  });
+
+  it("rejects arbitrary, local, and path-based callback origins", () => {
+    expect(__mobileOAuthTestUtils.getAllowedMobileCallbackOrigin("http://localhost:3000")).toBeNull();
+    expect(__mobileOAuthTestUtils.getAllowedMobileCallbackOrigin("https://evil.example.com")).toBeNull();
+    expect(__mobileOAuthTestUtils.getAllowedMobileCallbackOrigin("https://narqaebos-c2nmdy4n.manus.space/callback")).toBeNull();
+  });
+});
