@@ -276,6 +276,6 @@
 
 ## Mobile OAuth Redirect URI Correction
 - [x] Identify the rejected backend callback (`*.a.run.app`) and the required public frontend callback on `narqaebos-c2nmdy4n.manus.space`
-- [ ] Route mobile OAuth through an allowed callback endpoint before returning the verified Bearer token to the NARQA deep link
+- [x] Route mobile OAuth through an allowed public callback endpoint before returning the verified Bearer token to the NARQA deep link
 - [ ] Verify OAuth start, provider redirect, callback exchange, nonce validation, and return to `narqa-ebos://oauth/callback`
-- [ ] Rebuild APK and document the corrected OAuth callback configuration
+- [x] Rebuild APK and document the corrected OAuth callback configuration

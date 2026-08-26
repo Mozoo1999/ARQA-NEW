@@ -28,6 +28,10 @@ The home screen opens its operations spaces inside the mobile application. Sourc
 
 After mobile OAuth completes, the application calls the protected mobile endpoints for current operational data and for draft submission. Voice text and locally extracted image/PDF text are sent to the NARQA AI server endpoint only after the user chooses **تحليل عبر نموذج NARQA AI**. The server returns structured, editable review fields and never persists a financial or accounting result until the user explicitly chooses to create a `pending_review` draft. The model receives extracted text, not a direct local file path or an app-embedded API key.
 
+## OAuth redirect correction
+
+The prior APK constructed its OAuth provider callback from an internal deployment host (`*.a.run.app`), which the provider rejected. The corrected flow sends the verified public frontend origin `https://narqaebos-c2nmdy4n.manus.space` to the mobile OAuth start endpoint. The server allows only a root HTTPS `*.manus.space` callback origin and builds the provider callback as `https://narqaebos-c2nmdy4n.manus.space/api/mobile/oauth/callback`. The public start response was verified after deployment. The replacement APK was built by [GitHub Actions run 32964757499](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/32964757499), has SHA-256 `ecaa5e2c67292ab48f75d6a6330ac2405fd441c996057183ff1d56a30d6a31f1`, and is available at `/manus-storage/NARQA-EBOS-v0.1.0-oauth-redirect-fix-arm64_5f62b758.apk`.
+
 ## Native PDF analysis
 
 Digital PDFs are analysed in-app using native PDF text extraction, then routed through the same editable financial-field and review-guidance flow as images. Password-protected PDFs show an in-app error and never open a browser. For a scanned PDF with no embedded text, the app converts the first page to a cached image and runs the native image OCR path. Multi-page scanned-document aggregation has not been claimed or enabled; the user must review each source page explicitly.
