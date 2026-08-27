@@ -313,8 +313,8 @@
 - [ ] Add unit, API, authorization, and end-to-end tests for conversational clarification, approval, database insertion, Excel export, and rejected message content
 
 ## Native OCR Runtime and Continuous Voice-Control Correction
-- [ ] Reproduce and diagnose the undefined `extractTextFromImage` native-module failure in the built APK
-- [ ] Add a guarded native OCR adapter with a server-side AI fallback and user-visible error handling when an OCR module is unavailable
+- [x] Reproduce and diagnose the undefined `extractTextFromImage` native-module failure: expo-text-extractor has no Android native implementation in the installed package
+- [x] Add a guarded native OCR adapter with a server-side NARQA visual-AI fallback and user-visible error handling when an OCR module is unavailable
 - [ ] Verify every native module is included in Android release autolinking and fail the build check when the OCR adapter is unavailable
 - [ ] Start voice recognition automatically after each spoken assistant question, capture a spoken answer, and continue the same conversation session
 - [ ] Recognize explicit voice approval or rejection only after reading the review summary and require authentication for database execution
