@@ -300,14 +300,14 @@
 - [ ] Test the updated APK on a physical device with authenticated OAuth, a vehicle load, a receiving note, and a confirmed voice command
 
 ## Conversational Operational Assistant, Excel, and Messaging
-- [ ] Audit existing smart-intake, voice, document, audit-log, and export behavior against the required multi-turn assistant workflow
-- [ ] Design normalized conversation sessions, user questions, answers, collected fields, draft state, confirmation state, and execution outcome records
-- [ ] Implement a multi-turn Arabic assistant that asks typed and spoken clarification questions until it has enough verified fields for supplier, payment, receiving note, invoice, statement, approval, or operational draft
-- [ ] Add TTS for questions and result summaries, plus persistent textual transcripts and user corrections before execution
-- [ ] Add explicit user-approved execution that records date, user, source channel, transcript, analysis provenance, and resulting database IDs
-- [ ] Export approved operational records to a structured Excel workbook with separate operational, audit, and exceptions sheets
-- [ ] Add multi-image and multi-document selection with per-file analysis results, validation errors, and a combined review draft
-- [ ] Define official WhatsApp and SMS integration boundaries, consent, contact selection, and secure webhook/API requirements; do not use unofficial scraping or simulated message data
-- [ ] Implement supported contact selection and draft creation from manually selected/approved message content before an official messaging connector is configured
-- [ ] Ensure the supported app-icon quick action starts the conversational voice draft directly, while documenting Android/iOS limits on raw launcher-icon and global button interception
+- [x] Audit existing smart-intake, voice, document, audit-log, and export behavior against the required multi-turn assistant workflow
+- [x] Design normalized conversation sessions, user questions, answers, collected fields, draft state, confirmation state, and execution outcome records
+- [x] Implement a multi-turn Arabic assistant that asks typed and spoken clarification questions until it has enough verified fields for supplier, payment, receiving note, invoice, statement, approval, or operational draft
+- [x] Add TTS for questions and result summaries, plus persistent textual transcripts and user corrections before execution
+- [x] Add explicit user-approved execution that records date, user, source channel, transcript, analysis provenance, and resulting database IDs
+- [x] Export approved operational records to a structured Excel workbook with separate operational, audit, and exceptions sheets
+- [x] Add multi-image and multi-document selection with per-file analysis results, validation errors, and a combined review draft
+- [x] Define official WhatsApp and SMS integration boundaries, consent, contact selection, and secure webhook/API requirements; do not use unofficial scraping or simulated message data
+- [x] Implement supported contact selection and draft creation from manually selected/approved message content before an official messaging connector is configured
+- [x] Ensure the supported app-icon quick action starts the conversational voice draft directly, while documenting Android/iOS limits on raw launcher-icon and global button interception
 - [ ] Add unit, API, authorization, and end-to-end tests for conversational clarification, approval, database insertion, Excel export, and rejected message content

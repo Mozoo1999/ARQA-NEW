@@ -195,6 +195,15 @@ export async function importApprovedMessage(userId: number, input: { contactName
   return { importId: Number(result[0].insertId), conversation: started };
 }
 
+export function buildOperationalWorkbookBuffer(input: { operationalRows: Record<string, unknown>[]; auditRows: Record<string, unknown>[]; turnRows: Record<string, unknown>[]; exceptionRows: Record<string, unknown>[] }) {
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(input.operationalRows), "Operational Records");
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(input.auditRows), "Conversation Audit");
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(input.turnRows), "Conversation Turns");
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(input.exceptionRows), "Exceptions");
+  return XLSX.write(workbook, { type: "buffer", bookType: "xlsx" }) as Buffer;
+}
+
 export async function buildOperationalWorkbook(userId: number) {
   const database = await db.getDb();
   if (!database) throw new Error("Database not available");
@@ -204,12 +213,12 @@ export async function buildOperationalWorkbook(userId: number) {
     database.select().from(conversationTurns).orderBy(desc(conversationTurns.createdAt)),
   ]);
   const sessionIds = new Set(sessions.map(session => session.id));
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(events.map(event => ({ id: event.id, date: event.createdAt, method: event.entryMethod, source: event.sourceType, action: event.action, outcome: event.outcome, entityId: event.sourceEntityId, analysisModel: event.analysisModel, command: event.commandText }))), "Operational Records");
-  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(sessions.map(session => ({ id: session.id, date: session.createdAt, channel: session.channel, intent: session.intent, status: session.status, summary: session.summary, confirmationAt: session.confirmationAt, executedAt: session.executedAt }))), "Conversation Audit");
-  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(turns.filter(turn => sessionIds.has(turn.conversationSessionId)).map(turn => ({ sessionId: turn.conversationSessionId, turn: turn.turnNumber, date: turn.createdAt, speaker: turn.speaker, modality: turn.modality, content: turn.content }))), "Conversation Turns");
-  XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(sessions.filter(session => session.status === "failed" || session.status === "cancelled").map(session => ({ sessionId: session.id, status: session.status, intent: session.intent, summary: session.summary, updatedAt: session.updatedAt }))), "Exceptions");
-  const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" }) as Buffer;
+  const buffer = buildOperationalWorkbookBuffer({
+    operationalRows: events.map(event => ({ id: event.id, date: event.createdAt, method: event.entryMethod, source: event.sourceType, action: event.action, outcome: event.outcome, entityId: event.sourceEntityId, analysisModel: event.analysisModel, command: event.commandText })),
+    auditRows: sessions.map(session => ({ id: session.id, date: session.createdAt, channel: session.channel, intent: session.intent, status: session.status, summary: session.summary, confirmationAt: session.confirmationAt, executedAt: session.executedAt })),
+    turnRows: turns.filter(turn => sessionIds.has(turn.conversationSessionId)).map(turn => ({ sessionId: turn.conversationSessionId, turn: turn.turnNumber, date: turn.createdAt, speaker: turn.speaker, modality: turn.modality, content: turn.content })),
+    exceptionRows: sessions.filter(session => session.status === "failed" || session.status === "cancelled").map(session => ({ sessionId: session.id, status: session.status, intent: session.intent, summary: session.summary, updatedAt: session.updatedAt })),
+  });
   const exportRow = await database.insert(operationalExcelExports).values({ userId, recordCount: events.length, status: "created" });
   return { buffer, filename: `narqa-operational-records-${Date.now()}.xlsx`, exportId: Number(exportRow[0].insertId), recordCount: events.length };
 }
