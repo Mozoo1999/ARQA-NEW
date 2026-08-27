@@ -501,7 +501,7 @@ export const operationalInputEvents = mysqlTable("operational_input_events", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull().references(() => users.id),
   entryMethod: mysqlEnum("entryMethod", ["voice", "camera", "image", "pdf", "manual"]).notNull(),
-  sourceType: mysqlEnum("sourceType", ["vehicle_load", "receiving_note", "voice_command"]).notNull(),
+  sourceType: mysqlEnum("sourceType", ["vehicle_load", "receiving_note", "vehicle_trip", "voice_command"]).notNull(),
   sourceEntityId: int("sourceEntityId"),
   smartIntakeDraftId: int("smartIntakeDraftId").references(() => smartIntakeDrafts.id),
   commandText: text("commandText"),
@@ -553,6 +553,30 @@ export const conversationTurns = mysqlTable("conversation_turns", {
 
 export type ConversationTurn = typeof conversationTurns.$inferSelect;
 export type InsertConversationTurn = typeof conversationTurns.$inferInsert;
+
+export const vehicleTrips = mysqlTable("vehicle_trips", {
+  id: int("id").autoincrement().primaryKey(),
+  tripNumber: varchar("tripNumber", { length: 40 }).notNull().unique(),
+  vehicleId: int("vehicleId").notNull().references(() => vehicles.id),
+  customerId: int("customerId").notNull().references(() => customers.id),
+  conversationSessionId: int("conversationSessionId").references(() => conversationSessions.id),
+  loadingLocation: varchar("loadingLocation", { length: 256 }).notNull(),
+  unloadingLocation: varchar("unloadingLocation", { length: 256 }).notNull(),
+  cubicCapacity: decimal("cubicCapacity", { precision: 12, scale: 3 }).notNull(),
+  tripCount: int("tripCount").notNull(),
+  notes: text("notes"),
+  entryMethod: mysqlEnum("entryMethod", ["voice", "text", "manual"]).notNull(),
+  sourceTranscript: text("sourceTranscript").notNull(),
+  status: mysqlEnum("status", ["confirmed", "rejected"]).notNull().default("confirmed"),
+  createdByUserId: int("createdByUserId").notNull().references(() => users.id),
+  confirmedByUserId: int("confirmedByUserId").notNull().references(() => users.id),
+  confirmedAt: timestamp("confirmedAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type VehicleTrip = typeof vehicleTrips.$inferSelect;
+export type InsertVehicleTrip = typeof vehicleTrips.$inferInsert;
 
 export const approvedMessageImports = mysqlTable("approved_message_imports", {
   id: int("id").autoincrement().primaryKey(),

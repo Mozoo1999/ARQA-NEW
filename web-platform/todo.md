@@ -316,8 +316,18 @@
 - [x] Reproduce and diagnose the undefined `extractTextFromImage` native-module failure: expo-text-extractor has no Android native implementation in the installed package
 - [x] Add a guarded native OCR adapter with a server-side NARQA visual-AI fallback and user-visible error handling when an OCR module is unavailable
 - [ ] Verify every native module is included in Android release autolinking and fail the build check when the OCR adapter is unavailable
-- [ ] Start voice recognition automatically after each spoken assistant question, capture a spoken answer, and continue the same conversation session
-- [ ] Recognize explicit voice approval or rejection only after reading the review summary and require authentication for database execution
+- [x] Start voice recognition automatically after each spoken assistant question, capture a spoken answer, and continue the same conversation session
+- [x] Recognize explicit voice approval or rejection only after reading the review summary and require authentication for database execution
 - [ ] Define and enforce an allowlist of voice-controllable actions, with confirmation and authorization before any data-changing operation
 - [ ] Add tests for OCR fallback, voice-turn progression, approval/rejection, and blocked unauthorized execution
 - [ ] Build and physically test a replacement APK using image analysis, multi-turn spoken answers, voice approval, and permitted database insertion
+
+## Vehicle Trip Voice Entry and Extended Listening
+- [x] Add a dedicated `vehicle_trip` conversational intent triggered by Arabic add/insert vehicle-trip voice commands
+- [x] Collect vehicle plate number, loading location, unloading location, customer name, vehicle cubic capacity, trip count, and notes as required review fields
+- [x] Add a normalized vehicle-trip record linked to vehicle, customer, authenticated user, conversation session, entry method, confirmation timestamp, and audit log
+- [x] Read every missing-field question aloud, listen for the spoken answer, and preserve the typed alternative in the same session
+- [x] Read the complete vehicle-trip draft aloud and accept explicit spoken approval or rejection before database insertion
+- [x] Double the speech-listening window and add a visible extra-time control that restarts listening without losing the current question
+- [ ] Add validation tests for required trip fields, positive cubic capacity and trip count, authenticated confirmation, rejection, and audit provenance
+- [ ] Build and physically test an APK using a complete Arabic vehicle-trip voice scenario

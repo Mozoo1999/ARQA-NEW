@@ -7,10 +7,12 @@ import {
   conversationTurns,
   operationalExcelExports,
   operationalInputEvents,
+  vehicleTrips,
 } from "../drizzle/schema";
+import * as logistics from "./operationalLogistics";
 
 export type ConversationChannel = "voice" | "text" | "image" | "document" | "message";
-export type ConversationIntent = "supplier_registration" | "vehicle_load" | "receiving_note" | "payment_draft" | "invoice_draft" | "account_statement" | "approval" | "general_draft";
+export type ConversationIntent = "supplier_registration" | "vehicle_trip" | "vehicle_load" | "receiving_note" | "payment_draft" | "invoice_draft" | "account_statement" | "approval" | "general_draft";
 export type ConversationFields = Record<string, string>;
 
 export interface ConversationProgress {
@@ -30,6 +32,7 @@ function normalizedText(value: string) {
 function classifyIntent(text: string): ConversationIntent {
   const value = normalizedText(text).toLowerCase();
   if (/(مورد جديد|اضافة مورد|إضافة مورد|تسجيل مورد)/.test(value)) return "supplier_registration";
+  if (/(?:اضافة|إضافة|ادراج|إدراج|تسجيل)?\s*(?:نقلة|رحلة)(?:\s+سيارة)?/.test(value)) return "vehicle_trip";
   if (/(حمولة|شحنة|سيارة)/.test(value)) return "vehicle_load";
   if (/(اذن استلام|إذن استلام|استلام)/.test(value)) return "receiving_note";
   if (/(دفعة|دفع|سداد)/.test(value)) return "payment_draft";
@@ -70,6 +73,15 @@ function firstMissing(intent: ConversationIntent, fields: ConversationFields) {
     return null;
   }
   const requirements: Record<Exclude<ConversationIntent, "supplier_registration">, Array<{ key: string; question: string }>> = {
+    vehicle_trip: [
+      { key: "vehiclePlateNumber", question: "ما رقم السيارة أو رقم اللوحة؟" },
+      { key: "loadingLocation", question: "ما مكان الحمولة؟" },
+      { key: "unloadingLocation", question: "ما مكان التفريغ؟" },
+      { key: "customerName", question: "ما اسم العميل؟" },
+      { key: "cubicCapacity", question: "ما تكعيب السيارة؟ اذكر رقماً أكبر من صفر." },
+      { key: "tripCount", question: "ما عدد النقلات؟ اذكر عدداً صحيحاً أكبر من صفر." },
+      { key: "notes", question: "ما الملاحظات؟ قل لا توجد إذا لم تكن هناك ملاحظات." },
+    ],
     vehicle_load: [
       { key: "customerName", question: "ما اسم العميل المرتبط بالحمولة؟" },
       { key: "vehiclePlateNumber", question: "ما رقم لوحة السيارة؟" },
@@ -107,6 +119,7 @@ function firstMissing(intent: ConversationIntent, fields: ConversationFields) {
 
 function buildSummary(intent: ConversationIntent, fields: ConversationFields) {
   if (intent === "supplier_registration") return `مسودة مورد: ${fields.name ?? "غير محدد"} — فئة التوريد: ${fields.supplyCategory ?? "غير محددة"}.`;
+  if (intent === "vehicle_trip") return `مسودة نقلة سيارة: السيارة ${fields.vehiclePlateNumber ?? "غير محددة"}، من ${fields.loadingLocation ?? "مكان حمولة غير محدد"} إلى ${fields.unloadingLocation ?? "مكان تفريغ غير محدد"}، العميل ${fields.customerName ?? "غير محدد"}، التكعيب ${fields.cubicCapacity ?? "غير محدد"}، عدد النقلات ${fields.tripCount ?? "غير محدد"}، الملاحظات ${fields.notes ?? "غير محددة"}.`;
   if (intent === "vehicle_load") return `مسودة حمولة: ${fields.customerName ?? "عميل غير محدد"}، سيارة ${fields.vehiclePlateNumber ?? "غير محددة"}، ${fields.materialName ?? "مادة غير محددة"}، كمية ${fields.quantity ?? "غير محددة"}.`;
   if (intent === "receiving_note") return `مسودة إذن استلام: ${fields.customerName ?? "جهة غير محددة"}، سيارة ${fields.vehiclePlateNumber ?? "غير محددة"}، كمية ${fields.quantity ?? "غير محددة"}.`;
   return `مسودة ${intent}: ${Object.entries(fields).map(([key, value]) => `${key}: ${value}`).join("، ") || "بانتظار استكمال المعلومات"}.`;
@@ -117,6 +130,8 @@ export function deriveConversationProgress(source: string, existing?: { intent?:
   const fields = { ...(existing?.fields ?? initialFields(intent, source)) };
   if (existing?.awaiting) {
     if (existing.awaiting === "supplyCategory") fields.supplyCategory = supplyCategory(source) ?? source;
+    else if (existing.awaiting === "cubicCapacity") { const value = Number(normalizedText(source).match(/\d+(?:\.\d+)?/)?.[0]); if (Number.isFinite(value) && value > 0) fields.cubicCapacity = String(value); }
+    else if (existing.awaiting === "tripCount") { const value = Number(normalizedText(source).match(/\d+/)?.[0]); if (Number.isInteger(value) && value > 0) fields.tripCount = String(value); }
     else fields[existing.awaiting] = normalizedText(source);
   }
   const missing = firstMissing(intent, fields);
@@ -175,6 +190,17 @@ export async function confirmConversation(userId: number, sessionId: number) {
     if (!categoryId) categoryId = await db.createSupplierCategory({ name: categoryName, description: "Created after confirmed conversational intake" });
     const supplierId = await db.createSupplier({ code: `SUP-CONV-${Date.now()}`, name: fields.name, categoryId, contactPerson: fields.contactPerson ?? null, phone: fields.phone ?? null, status: "active", country: "Saudi Arabia", notes: `Created from conversation session ${sessionId}` });
     outcome = { entityType: "supplier", entityId: supplierId, status: "executed" };
+  } else if (intent === "vehicle_trip") {
+    const required = ["vehiclePlateNumber", "loadingLocation", "unloadingLocation", "customerName", "cubicCapacity", "tripCount", "notes"] as const;
+    if (required.some(key => !fields[key])) throw new Error("Vehicle trip fields are incomplete");
+    const cubicCapacity = Number(fields.cubicCapacity); const tripCount = Number(fields.tripCount);
+    if (!(cubicCapacity > 0) || !Number.isInteger(tripCount) || tripCount <= 0) throw new Error("Vehicle trip cubic capacity and count must be positive");
+    const resolved = await logistics.resolveCustomerAndVehicle({ customerName: fields.customerName, vehiclePlateNumber: fields.vehiclePlateNumber, createMissing: true });
+    const now = new Date();
+    const result = await database.insert(vehicleTrips).values({ tripNumber: `TRP-${Date.now()}`, vehicleId: resolved.vehicle.id, customerId: resolved.customer.id, conversationSessionId: sessionId, loadingLocation: fields.loadingLocation, unloadingLocation: fields.unloadingLocation, cubicCapacity: fields.cubicCapacity, tripCount, notes: fields.notes, entryMethod: session.channel === "voice" ? "voice" : "text", sourceTranscript: session.sourceTranscript ?? "", status: "confirmed", createdByUserId: userId, confirmedByUserId: userId, confirmedAt: now });
+    const tripId = Number(result[0].insertId);
+    await database.insert(operationalInputEvents).values({ userId, entryMethod: session.channel === "voice" ? "voice" : "manual", sourceType: "vehicle_trip", sourceEntityId: tripId, commandText: session.sourceTranscript ?? "", analysisModel: session.analysisModel ?? "narqa-conversation-rules", action: "vehicle_trip_confirmed", outcome: "confirmed", metadata: { conversationSessionId: sessionId, customerId: resolved.customer.id, vehicleId: resolved.vehicle.id, loadingLocation: fields.loadingLocation, unloadingLocation: fields.unloadingLocation, cubicCapacity, tripCount } });
+    outcome = { entityType: "vehicle_trip", entityId: tripId, status: "executed" };
   } else {
     const draftId = await db.createSmartIntakeDraft({ sourceType: session.channel === "voice" ? "voice_command" : "ocr", title: `مسودة محادثة: ${intent}`, intent, rawContent: session.sourceTranscript ?? "", status: "pending_review", metadata: { conversationSessionId: sessionId, fields } });
     outcome = { entityType: "smart_intake_draft", entityId: draftId, status: "pending_review" };

@@ -24,6 +24,30 @@ describe("Arabic conversational operational assistant", () => {
     expect(__conversationTestUtils.classifyIntent("إذن استلام خامات اليوم")).toBe("receiving_note");
   });
 
+  it("collects a complete Arabic vehicle-trip draft in the required question order", () => {
+    let progress = __conversationTestUtils.deriveConversationProgress("إضافة نقلة سيارة");
+    expect(progress.intent).toBe("vehicle_trip");
+    const answers: Array<[string, string]> = [
+      ["vehiclePlateNumber", "أ ب ج 1234"], ["loadingLocation", "محجر السويس"], ["unloadingLocation", "مصنع أكتوبر"],
+      ["customerName", "العميل العالمية"], ["cubicCapacity", "42.5 متر مكعب"], ["tripCount", "3 نقلات"], ["notes", "لا توجد"],
+    ];
+    for (const [awaiting, answer] of answers) progress = __conversationTestUtils.deriveConversationProgress(answer, { intent: progress.intent, fields: progress.fields, awaiting });
+    expect(progress.readyForReview).toBe(true);
+    expect(progress.fields.cubicCapacity).toBe("42.5");
+    expect(progress.fields.tripCount).toBe("3");
+    expect(progress.summary).toContain("محجر السويس");
+    expect(progress.summary).toContain("مصنع أكتوبر");
+  });
+
+  it("keeps the vehicle-trip question open when cubic capacity or trip count is not positive", () => {
+    const cubic = __conversationTestUtils.deriveConversationProgress("صفر", { intent: "vehicle_trip", fields: { vehiclePlateNumber: "أ ب ج 1234", loadingLocation: "أ", unloadingLocation: "ب", customerName: "عميل" }, awaiting: "cubicCapacity" });
+    expect(cubic.readyForReview).toBe(false);
+    expect(cubic.nextQuestion).toContain("تكعيب");
+    const count = __conversationTestUtils.deriveConversationProgress("0", { intent: "vehicle_trip", fields: { ...cubic.fields, cubicCapacity: "40" }, awaiting: "tripCount" });
+    expect(count.readyForReview).toBe(false);
+    expect(count.nextQuestion).toContain("عدد النقلات");
+  });
+
   it("normalises Arabic category phrasing without inventing a category", () => {
     expect(__conversationTestUtils.supplyCategory("توريد فنيين")).toBe("فنيين");
     expect(__conversationTestUtils.supplyCategory("خدمة غير مصنفة")).toBeUndefined();
