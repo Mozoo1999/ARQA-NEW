@@ -32,4 +32,11 @@ describe("mobile AI input validation", () => {
     expect(__mobileRouteTestUtils.mobileAnalysisSchema.safeParse({ sourceType: "unknown", rawContent: "x" }).success).toBe(false);
     expect(__mobileRouteTestUtils.mobileAnalysisSchema.safeParse({ sourceType: "ocr", rawContent: "" }).success).toBe(false);
   });
+
+  it("accepts a supported image data URL and rejects unsupported or oversized visual payloads", () => {
+    const dataUrl = `data:image/jpeg;base64,${"a".repeat(64)}`;
+    expect(__mobileRouteTestUtils.imageAnalysisSchema.safeParse({ sourceType: "camera", imageDataUrl: dataUrl, context: "إذن استلام" }).success).toBe(true);
+    expect(__mobileRouteTestUtils.imageAnalysisSchema.safeParse({ sourceType: "camera", imageDataUrl: "data:application/pdf;base64,abc" }).success).toBe(false);
+    expect(__mobileRouteTestUtils.imageAnalysisSchema.safeParse({ sourceType: "image", imageDataUrl: `data:image/png;base64,${"a".repeat(8_000_000)}` }).success).toBe(false);
+  });
 });

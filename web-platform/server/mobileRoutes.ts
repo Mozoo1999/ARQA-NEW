@@ -29,6 +29,12 @@ const mobileAnalysisSchema = z.object({
   rawContent: z.string().min(1).max(100_000),
 });
 
+const imageAnalysisSchema = z.object({
+  sourceType: z.enum(["camera", "image"]),
+  imageDataUrl: z.string().regex(/^data:image\/(?:jpeg|png|webp);base64,/, "A supported image data URL is required").max(8_000_000),
+  context: z.string().max(2_000).optional(),
+});
+
 const operationAnalysisSchema = z.object({
   sourceType: z.enum(["vehicle_load", "receiving_note", "voice_command"]),
   rawContent: z.string().min(1).max(100_000),
@@ -257,6 +263,30 @@ export function registerMobileRoutes(app: Express) {
     } catch (error) { console.error("[Mobile] AI analysis failed", error); res.status(502).json({ error: "Project AI analysis is temporarily unavailable" }); }
   });
 
+  app.post("/api/mobile/ai/analyze-image", async (req, res) => {
+    const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
+    const parsed = imageAnalysisSchema.safeParse(req.body);
+    if (!parsed.success) { res.status(400).json({ error: "Invalid image analysis input", issues: parsed.error.issues }); return; }
+    try {
+      const result = await invokeLLM({
+        model: "gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: "You are NARQA EBOS visual operational intake analysis. Extract only evidence visible in the image. Analyse Arabic and English vehicle-load tickets, receiving notes, supplier invoices, and receipts. Never invent values. Return empty strings for unknown fields. This is an editable review proposal only, never an automatic posting." },
+          { role: "user", content: [
+            { type: "text", text: `Source: ${parsed.data.sourceType}\nContext: ${parsed.data.context ?? ""}\nExtract vendor/client, amount, currency, document date, reference number, tax number, and the most likely lower_snake_case intent.` },
+            { type: "image_url", image_url: { url: parsed.data.imageDataUrl, detail: "high" } },
+          ] },
+        ],
+        response_format: analysisOutputSchema,
+        maxTokens: 2_048,
+      });
+      const content = result.choices[0]?.message.content; if (typeof content !== "string") throw new Error("AI image response was not text");
+      const analysis = JSON.parse(content) as Record<string, unknown>;
+      await db.logActivity({ userId: user.id, module: "smart_intake", action: "mobile_visual_ai_analysis_requested", entityType: "mobile_image_analysis", entityId: 0, entityLabel: parsed.data.sourceType });
+      res.json({ analysis, model: result.model, requiresReview: true });
+    } catch (error) { console.error("[Mobile] Visual AI analysis failed", error); res.status(502).json({ error: "Project visual AI analysis is temporarily unavailable" }); }
+  });
+
   app.post("/api/mobile/ai/analyze-operation", async (req, res) => {
     const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
     const parsed = operationAnalysisSchema.safeParse(req.body);
@@ -271,4 +301,4 @@ export function registerMobileRoutes(app: Express) {
   });
 }
 
-export const __mobileRouteTestUtils = { mobileDraftSchema, mobileAnalysisSchema, operationAnalysisSchema, vehicleLoadSubmissionSchema, receivingNoteSubmissionSchema };
+export const __mobileRouteTestUtils = { mobileDraftSchema, mobileAnalysisSchema, imageAnalysisSchema, operationAnalysisSchema, vehicleLoadSubmissionSchema, receivingNoteSubmissionSchema };

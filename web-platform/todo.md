@@ -311,3 +311,13 @@
 - [x] Implement supported contact selection and draft creation from manually selected/approved message content before an official messaging connector is configured
 - [x] Ensure the supported app-icon quick action starts the conversational voice draft directly, while documenting Android/iOS limits on raw launcher-icon and global button interception
 - [ ] Add unit, API, authorization, and end-to-end tests for conversational clarification, approval, database insertion, Excel export, and rejected message content
+
+## Native OCR Runtime and Continuous Voice-Control Correction
+- [ ] Reproduce and diagnose the undefined `extractTextFromImage` native-module failure in the built APK
+- [ ] Add a guarded native OCR adapter with a server-side AI fallback and user-visible error handling when an OCR module is unavailable
+- [ ] Verify every native module is included in Android release autolinking and fail the build check when the OCR adapter is unavailable
+- [ ] Start voice recognition automatically after each spoken assistant question, capture a spoken answer, and continue the same conversation session
+- [ ] Recognize explicit voice approval or rejection only after reading the review summary and require authentication for database execution
+- [ ] Define and enforce an allowlist of voice-controllable actions, with confirmation and authorization before any data-changing operation
+- [ ] Add tests for OCR fallback, voice-turn progression, approval/rejection, and blocked unauthorized execution
+- [ ] Build and physically test a replacement APK using image analysis, multi-turn spoken answers, voice approval, and permitted database insertion
