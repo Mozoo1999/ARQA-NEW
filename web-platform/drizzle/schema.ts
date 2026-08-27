@@ -515,3 +515,71 @@ export const operationalInputEvents = mysqlTable("operational_input_events", {
 
 export type OperationalInputEvent = typeof operationalInputEvents.$inferSelect;
 export type InsertOperationalInputEvent = typeof operationalInputEvents.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Conversational operational assistant and approved-message intake
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const conversationSessions = mysqlTable("conversation_sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  channel: mysqlEnum("channel", ["voice", "text", "image", "document", "message"]).notNull(),
+  status: mysqlEnum("status", ["collecting", "ready_for_review", "confirmed", "executed", "cancelled", "failed"]).notNull().default("collecting"),
+  intent: varchar("intent", { length: 96 }),
+  sourceTranscript: text("sourceTranscript"),
+  collectedFields: json("collectedFields"),
+  nextQuestion: text("nextQuestion"),
+  summary: text("summary"),
+  analysisModel: varchar("analysisModel", { length: 128 }),
+  confirmationAt: timestamp("confirmationAt"),
+  executedAt: timestamp("executedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ConversationSession = typeof conversationSessions.$inferSelect;
+export type InsertConversationSession = typeof conversationSessions.$inferInsert;
+
+export const conversationTurns = mysqlTable("conversation_turns", {
+  id: int("id").autoincrement().primaryKey(),
+  conversationSessionId: int("conversationSessionId").notNull().references(() => conversationSessions.id),
+  turnNumber: int("turnNumber").notNull(),
+  speaker: mysqlEnum("speaker", ["assistant", "user", "system"]).notNull(),
+  modality: mysqlEnum("modality", ["voice", "text", "image", "document", "message"]).notNull(),
+  content: text("content").notNull(),
+  normalizedFields: json("normalizedFields"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ConversationTurn = typeof conversationTurns.$inferSelect;
+export type InsertConversationTurn = typeof conversationTurns.$inferInsert;
+
+export const approvedMessageImports = mysqlTable("approved_message_imports", {
+  id: int("id").autoincrement().primaryKey(),
+  conversationSessionId: int("conversationSessionId").notNull().references(() => conversationSessions.id),
+  userId: int("userId").notNull().references(() => users.id),
+  contactName: varchar("contactName", { length: 256 }).notNull(),
+  contactPhone: varchar("contactPhone", { length: 48 }),
+  sourceChannel: mysqlEnum("sourceChannel", ["manual_message", "whatsapp", "sms"]).notNull(),
+  consentConfirmedAt: timestamp("consentConfirmedAt").notNull(),
+  messageContent: text("messageContent").notNull(),
+  status: mysqlEnum("status", ["imported", "approved", "rejected", "executed"]).notNull().default("imported"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ApprovedMessageImport = typeof approvedMessageImports.$inferSelect;
+export type InsertApprovedMessageImport = typeof approvedMessageImports.$inferInsert;
+
+export const operationalExcelExports = mysqlTable("operational_excel_exports", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  requestedFrom: timestamp("requestedFrom"),
+  requestedTo: timestamp("requestedTo"),
+  recordCount: int("recordCount").notNull().default(0),
+  workbookKey: varchar("workbookKey", { length: 512 }),
+  status: mysqlEnum("status", ["created", "downloaded", "failed"]).notNull().default("created"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type OperationalExcelExport = typeof operationalExcelExports.$inferSelect;
+export type InsertOperationalExcelExport = typeof operationalExcelExports.$inferInsert;

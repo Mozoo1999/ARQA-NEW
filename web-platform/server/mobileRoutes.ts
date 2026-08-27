@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { Express, Request, Response } from "express";
 import * as db from "./db";
 import * as logistics from "./operationalLogistics";
+import * as conversation from "./conversationalAssistant";
 import { invokeLLM } from "./_core/llm";
 import { sdk } from "./_core/sdk";
 
@@ -31,6 +32,24 @@ const mobileAnalysisSchema = z.object({
 const operationAnalysisSchema = z.object({
   sourceType: z.enum(["vehicle_load", "receiving_note", "voice_command"]),
   rawContent: z.string().min(1).max(100_000),
+});
+
+const conversationStartSchema = z.object({
+  channel: z.enum(["voice", "text", "image", "document", "message"]),
+  content: z.string().min(1).max(100_000),
+});
+
+const conversationAnswerSchema = z.object({
+  channel: z.enum(["voice", "text", "image", "document", "message"]),
+  content: z.string().min(1).max(100_000),
+});
+
+const approvedMessageImportSchema = z.object({
+  contactName: z.string().min(1).max(256),
+  contactPhone: z.string().max(48).optional(),
+  sourceChannel: z.enum(["manual_message", "whatsapp", "sms"]),
+  content: z.string().min(1).max(100_000),
+  consentConfirmed: z.literal(true),
 });
 
 const operationalLineSchema = z.object({
@@ -116,6 +135,50 @@ async function createGenericIntakeDraft(userId: number, input: { sourceType: "oc
 }
 
 export function registerMobileRoutes(app: Express) {
+  app.post("/api/mobile/conversations", async (req, res) => {
+    const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
+    const parsed = conversationStartSchema.safeParse(req.body);
+    if (!parsed.success) { res.status(400).json({ error: "Invalid conversation start", issues: parsed.error.issues }); return; }
+    try { res.status(201).json(await conversation.startConversation(user.id, parsed.data)); }
+    catch (error) { console.error("[Mobile] Conversation start failed", error); res.status(422).json({ error: error instanceof Error ? error.message : "Failed to start conversation" }); }
+  });
+
+  app.post("/api/mobile/conversations/:id/answers", async (req, res) => {
+    const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
+    const id = z.coerce.number().int().positive().safeParse(req.params.id);
+    const parsed = conversationAnswerSchema.safeParse(req.body);
+    if (!id.success || !parsed.success) { res.status(400).json({ error: "Invalid conversation answer" }); return; }
+    try { res.json(await conversation.answerConversation(user.id, id.data, parsed.data)); }
+    catch (error) { console.error("[Mobile] Conversation answer failed", error); res.status(422).json({ error: error instanceof Error ? error.message : "Failed to save answer" }); }
+  });
+
+  app.post("/api/mobile/conversations/:id/confirm", async (req, res) => {
+    const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
+    const id = z.coerce.number().int().positive().safeParse(req.params.id);
+    if (!id.success) { res.status(400).json({ error: "Invalid conversation ID" }); return; }
+    try { res.json(await conversation.confirmConversation(user.id, id.data)); }
+    catch (error) { console.error("[Mobile] Conversation confirmation failed", error); res.status(422).json({ error: error instanceof Error ? error.message : "Failed to confirm conversation" }); }
+  });
+
+  app.post("/api/mobile/messages/import", async (req, res) => {
+    const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
+    const parsed = approvedMessageImportSchema.safeParse(req.body);
+    if (!parsed.success) { res.status(400).json({ error: "Invalid approved message import", issues: parsed.error.issues }); return; }
+    try { res.status(201).json(await conversation.importApprovedMessage(user.id, parsed.data)); }
+    catch (error) { console.error("[Mobile] Approved message import failed", error); res.status(422).json({ error: error instanceof Error ? error.message : "Failed to import message" }); }
+  });
+
+  app.get("/api/mobile/exports/operational.xlsx", async (req, res) => {
+    const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
+    try {
+      const workbook = await conversation.buildOperationalWorkbook(user.id);
+      res.status(200).setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${workbook.filename}"`);
+      res.setHeader("X-NARQA-Export-Id", String(workbook.exportId));
+      res.send(workbook.buffer);
+    } catch (error) { console.error("[Mobile] Excel export failed", error); res.status(500).json({ error: "Failed to generate operational workbook" }); }
+  });
+
   app.get("/api/mobile/dashboard", async (req, res) => {
     const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
     try {

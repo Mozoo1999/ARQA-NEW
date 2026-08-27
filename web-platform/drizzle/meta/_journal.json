@@ -22,6 +22,20 @@
       "when": 1787261521534,
       "tag": "0002_solid_jane_foster",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1787748358586,
+      "tag": "0003_groovy_lockheed",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1787788679741,
+      "tag": "0004_shiny_kang",
+      "breakpoints": true
     }
   ]
 }
