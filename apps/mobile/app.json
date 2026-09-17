@@ -21,12 +21,13 @@
         "NSSpeechRecognitionUsageDescription": "يستخدم NARQA EBOS التعرف على الكلام لتحويل الأوامر العربية إلى نص قابل للمراجعة.",
         "NSCameraUsageDescription": "يستخدم NARQA EBOS الكاميرا لالتقاط الإيصالات والمستندات لمراجعتها.",
         "NSPhotoLibraryUsageDescription": "يستخدم NARQA EBOS مكتبة الصور لاختيار مستندات الإدخال.",
+        "NSContactsUsageDescription": "يستخدم NARQA EBOS جهة اتصال تختارها أنت فقط لإنشاء مسودة رسالة بعد موافقتك.",
         "UIRequiresFullScreen": false
       }
     },
     "android": {
       "package": "com.narqa.ebos",
-      "permissions": ["RECORD_AUDIO", "CAMERA", "READ_MEDIA_IMAGES"],
+      "permissions": ["RECORD_AUDIO", "CAMERA", "READ_MEDIA_IMAGES", "READ_CONTACTS"],
       "adaptiveIcon": {
         "backgroundColor": "#07111F",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -43,6 +44,12 @@
       "expo-web-browser",
       "expo-secure-store",
       "expo-image-picker",
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "اسمح لـ $(PRODUCT_NAME) بالوصول إلى جهة اتصال تختارها لإنشاء مسودة رسالة."
+        }
+      ],
       [
         "expo-speech-recognition",
         {

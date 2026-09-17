@@ -5,6 +5,8 @@ import * as logistics from "./operationalLogistics";
 import * as conversation from "./conversationalAssistant";
 import { invokeLLM } from "./_core/llm";
 import { sdk } from "./_core/sdk";
+import { documentPageAnalysisOutputSchema, type DocumentPageAnalysis } from "./documentPageAnalysis";
+import { attachWhatsAppConversation, canReviewWhatsAppInbound, claimWhatsAppInboundEventForReview, getWhatsAppConnectionStatus } from "./whatsappBusiness";
 
 const decimalString = z.string().regex(/^\d+(?:\.\d{1,3})?$/);
 const entryMethodSchema = z.enum(["voice", "camera", "image", "pdf", "manual"]);
@@ -35,6 +37,15 @@ const imageAnalysisSchema = z.object({
   context: z.string().max(2_000).optional(),
 });
 
+const MAX_DOCUMENT_PAGES = 25;
+const documentPageAnalysisSchema = z.object({
+  pageNumber: z.number().int().min(1).max(MAX_DOCUMENT_PAGES),
+  totalPages: z.number().int().min(1).max(MAX_DOCUMENT_PAGES),
+  imageDataUrl: z.string().regex(/^data:image\/(?:jpeg|png|webp);base64,/, "A supported image page data URL is required").max(8_000_000),
+  fileName: z.string().min(1).max(256),
+  context: z.string().max(2_000).optional(),
+}).refine(value => value.pageNumber <= value.totalPages, { message: "pageNumber cannot exceed totalPages", path: ["pageNumber"] });
+
 const operationAnalysisSchema = z.object({
   sourceType: z.enum(["vehicle_load", "receiving_note", "voice_command"]),
   rawContent: z.string().min(1).max(100_000),
@@ -55,6 +66,10 @@ const approvedMessageImportSchema = z.object({
   contactPhone: z.string().max(48).optional(),
   sourceChannel: z.enum(["manual_message", "whatsapp", "sms"]),
   content: z.string().min(1).max(100_000),
+  consentConfirmed: z.literal(true),
+});
+
+const whatsappReviewerImportSchema = z.object({
   consentConfirmed: z.literal(true),
 });
 
@@ -141,6 +156,26 @@ async function createGenericIntakeDraft(userId: number, input: { sourceType: "oc
 }
 
 export function registerMobileRoutes(app: Express) {
+  app.get("/api/mobile/integrations/whatsapp/status", async (req, res) => {
+    const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
+    res.json(getWhatsAppConnectionStatus());
+  });
+
+  app.post("/api/mobile/integrations/whatsapp/events/:id/import", async (req, res) => {
+    const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
+    if (!canReviewWhatsAppInbound(user.role)) { res.status(403).json({ error: "يتطلب تحويل رسالة WhatsApp الواردة دور مدير أو مسؤول وموافقة صريحة." }); return; }
+    const eventId = z.coerce.number().int().positive().safeParse(req.params.id);
+    const parsed = whatsappReviewerImportSchema.safeParse(req.body);
+    if (!eventId.success || !parsed.success) { res.status(400).json({ error: "يجب تحديد حدث صحيح وتأكيد موافقة المراجع." }); return; }
+    try {
+      const event = await claimWhatsAppInboundEventForReview(eventId.data, user.id);
+      const imported = await conversation.importApprovedMessage(user.id, { contactName: event.senderName || event.senderWhatsAppId, contactPhone: event.senderWhatsAppId, sourceChannel: "whatsapp", content: event.messageContent!, consentConfirmed: parsed.data.consentConfirmed });
+      await attachWhatsAppConversation(event.id, imported.conversation.sessionId);
+      await db.logActivity({ userId: user.id, module: "messaging", action: "whatsapp_inbound_approved_for_review", entityType: "whatsapp_inbound_event", entityId: event.id, entityLabel: event.providerMessageId });
+      res.status(201).json({ eventId: event.id, importId: imported.importId, conversation: imported.conversation, operationalRecordsCreated: 0 });
+    } catch (error) { console.error("[Mobile] WhatsApp reviewer import failed", error); res.status(422).json({ error: error instanceof Error ? error.message : "تعذر إنشاء مسودة مراجعة من رسالة WhatsApp." }); }
+  });
+
   app.post("/api/mobile/conversations", async (req, res) => {
     const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
     const parsed = conversationStartSchema.safeParse(req.body);
@@ -162,8 +197,16 @@ export function registerMobileRoutes(app: Express) {
     const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
     const id = z.coerce.number().int().positive().safeParse(req.params.id);
     if (!id.success) { res.status(400).json({ error: "Invalid conversation ID" }); return; }
-    try { res.json(await conversation.confirmConversation(user.id, id.data)); }
+    try { res.json(await conversation.confirmConversation(user.id, user.role, id.data)); }
     catch (error) { console.error("[Mobile] Conversation confirmation failed", error); res.status(422).json({ error: error instanceof Error ? error.message : "Failed to confirm conversation" }); }
+  });
+
+  app.post("/api/mobile/conversations/:id/reject", async (req, res) => {
+    const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
+    const id = z.coerce.number().int().positive().safeParse(req.params.id);
+    if (!id.success) { res.status(400).json({ error: "Invalid conversation ID" }); return; }
+    try { res.json(await conversation.rejectConversation(user.id, id.data)); }
+    catch (error) { console.error("[Mobile] Conversation rejection failed", error); res.status(422).json({ error: error instanceof Error ? error.message : "Failed to reject conversation" }); }
   });
 
   app.post("/api/mobile/messages/import", async (req, res) => {
@@ -287,6 +330,31 @@ export function registerMobileRoutes(app: Express) {
     } catch (error) { console.error("[Mobile] Visual AI analysis failed", error); res.status(502).json({ error: "Project visual AI analysis is temporarily unavailable" }); }
   });
 
+  app.post("/api/mobile/ai/analyze-document-page", async (req, res) => {
+    const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
+    const parsed = documentPageAnalysisSchema.safeParse(req.body);
+    if (!parsed.success) { res.status(400).json({ error: `Invalid document page. PDF analysis supports up to ${MAX_DOCUMENT_PAGES} pages per file.`, issues: parsed.error.issues }); return; }
+    try {
+      const pageInput = parsed.data;
+      const result = await invokeLLM({
+        model: "gemini-3.1-pro-preview",
+        messages: [
+          { role: "system", content: "You are NARQA EBOS high-accuracy document-page analysis. Analyse only visible evidence in this single page, including Arabic/English print and handwriting when legible. Never infer or copy values from prior pages. Return one field item only when a visible snippet supports it; include that exact snippet in evidence. Mark unreadable when no reliable business evidence is visible. Candidate operationType values are vehicle_load, receiving_note, supplier_invoice, receipt, or unknown. This result is evidence for human review and never posts automatically." },
+          { role: "user", content: [
+            { type: "text", text: `File: ${pageInput.fileName}\nPage: ${pageInput.pageNumber} of ${pageInput.totalPages}\nContext: ${pageInput.context ?? ""}\nExtract page-level evidence for the allowed fields only.` },
+            { type: "image_url", image_url: { url: pageInput.imageDataUrl, detail: "high" } },
+          ] },
+        ],
+        response_format: documentPageAnalysisOutputSchema,
+        maxTokens: 4_096,
+      });
+      const content = result.choices[0]?.message.content; if (typeof content !== "string") throw new Error("AI document page response was not text");
+      const page = { ...(JSON.parse(content) as DocumentPageAnalysis), pageNumber: pageInput.pageNumber };
+      await db.logActivity({ userId: user.id, module: "smart_intake", action: "mobile_document_page_analyzed", entityType: "mobile_document_page", entityId: pageInput.pageNumber, entityLabel: `${pageInput.fileName} (${pageInput.pageNumber}/${pageInput.totalPages})` });
+      res.json({ page, model: result.model, requiresReview: true, policy: { maxPages: MAX_DOCUMENT_PAGES, analyzedPage: pageInput.pageNumber, totalPages: pageInput.totalPages } });
+    } catch (error) { console.error("[Mobile] Document page analysis failed", error); res.status(502).json({ error: "Document page visual analysis is temporarily unavailable" }); }
+  });
+
   app.post("/api/mobile/ai/analyze-operation", async (req, res) => {
     const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
     const parsed = operationAnalysisSchema.safeParse(req.body);
@@ -301,4 +369,4 @@ export function registerMobileRoutes(app: Express) {
   });
 }
 
-export const __mobileRouteTestUtils = { mobileDraftSchema, mobileAnalysisSchema, imageAnalysisSchema, operationAnalysisSchema, vehicleLoadSubmissionSchema, receivingNoteSubmissionSchema };
+export const __mobileRouteTestUtils = { mobileDraftSchema, mobileAnalysisSchema, imageAnalysisSchema, documentPageAnalysisSchema, operationAnalysisSchema, vehicleLoadSubmissionSchema, receivingNoteSubmissionSchema, MAX_DOCUMENT_PAGES };

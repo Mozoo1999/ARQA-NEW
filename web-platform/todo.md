@@ -318,8 +318,8 @@
 - [ ] Verify every native module is included in Android release autolinking and fail the build check when the OCR adapter is unavailable
 - [x] Start voice recognition automatically after each spoken assistant question, capture a spoken answer, and continue the same conversation session
 - [x] Recognize explicit voice approval or rejection only after reading the review summary and require authentication for database execution
-- [ ] Define and enforce an allowlist of voice-controllable actions, with confirmation and authorization before any data-changing operation
-- [ ] Add tests for OCR fallback, voice-turn progression, approval/rejection, and blocked unauthorized execution
+- [x] Define and enforce an allowlist of voice-controllable actions, with confirmation and authorization before any data-changing operation
+- [x] Add tests for OCR fallback, voice-turn progression, approval/rejection, and blocked unauthorized execution
 - [ ] Build and physically test a replacement APK using image analysis, multi-turn spoken answers, voice approval, and permitted database insertion
 
 ## Vehicle Trip Voice Entry and Extended Listening
@@ -329,5 +329,24 @@
 - [x] Read every missing-field question aloud, listen for the spoken answer, and preserve the typed alternative in the same session
 - [x] Read the complete vehicle-trip draft aloud and accept explicit spoken approval or rejection before database insertion
 - [x] Double the speech-listening window and add a visible extra-time control that restarts listening without losing the current question
-- [ ] Add validation tests for required trip fields, positive cubic capacity and trip count, authenticated confirmation, rejection, and audit provenance
+- [x] Add validation tests for required trip fields, positive cubic capacity and trip count, authenticated confirmation, rejection, and audit provenance
 - [ ] Build and physically test an APK using a complete Arabic vehicle-trip voice scenario
+
+## Mobile Experience Redesign and Governed Voice Control
+- [x] Introduce a central server-side action registry defining Arabic intent aliases, required fields, field prompts, allowed roles, approval requirements, and execution policy for every supported mobile action
+- [x] Route the existing conversational assistant through the central registry and prohibit unknown, unapproved, or unauthorized data-changing commands from execution
+- [ ] Extract reusable mobile voice-session, API, design-selection, and permission-center modules from the monolithic mobile entry file without breaking current behavior
+- [x] Add an in-app RTL design-choice screen for Command Center, Operational Canvas, and Adaptive Orbit, with an explicit persisted selection and a usable default
+- [x] Implement a permission-aware quick-action voice entry that opens the internal session and waits for user-granted microphone/speech permission
+- [x] Add structured tests for registry field order, role enforcement, approval/rejection handling, and non-executable action policy
+
+## Advanced Multi-Page Document Intelligence and Integrations
+- [x] Render and analyze every supported PDF page through the authenticated visual-analysis path, with bounded file/page policy and no silent first-page fallback
+- [x] Preserve per-page evidence, confidence, unreadable-page state, and deterministic field-conflict review in mobile and server contracts
+- [x] Add a device-permission center and user-driven contacts picker without bulk uploading the address book
+- [x] Document and implement only supported SMS actions; do not claim background inbox monitoring or iOS parity where platform policy prevents it
+- [x] Prepare a WhatsApp Business connection status and server-side webhook design; activate inbound processing only after official Meta credentials, account setup, consent, and webhook verification are supplied
+- [ ] Test multi-page document processing, permission denial, contacts selection, message consent, authorization, auditing, and persisted Excel export end-to-end
+
+## Reusable Governed Mobile Operations Skill
+- [x] Create and validate a reusable skill for governed Expo operational mobile development, including voice authorization, multi-page document review, privacy permissions, official messaging boundaries, test gates, and release verification

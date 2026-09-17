@@ -8,6 +8,7 @@ import {
   boolean,
   decimal,
   json,
+  foreignKey,
 } from "drizzle-orm/mysql-core";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -593,6 +594,33 @@ export const approvedMessageImports = mysqlTable("approved_message_imports", {
 
 export type ApprovedMessageImport = typeof approvedMessageImports.$inferSelect;
 export type InsertApprovedMessageImport = typeof approvedMessageImports.$inferInsert;
+
+// Official WhatsApp Business webhooks are retained as reviewable inbound events.
+// They never become operational records before an authenticated reviewer confirms a draft.
+export const whatsappInboundEvents = mysqlTable("whatsapp_inbound_events", {
+  id: int("id").autoincrement().primaryKey(),
+  providerMessageId: varchar("providerMessageId", { length: 256 }).notNull().unique(),
+  whatsappBusinessAccountId: varchar("whatsappBusinessAccountId", { length: 128 }),
+  phoneNumberId: varchar("phoneNumberId", { length: 128 }).notNull(),
+  senderWhatsAppId: varchar("senderWhatsAppId", { length: 64 }).notNull(),
+  senderName: varchar("senderName", { length: 256 }),
+  messageType: varchar("messageType", { length: 64 }).notNull(),
+  messageContent: text("messageContent"),
+  receivedAt: timestamp("receivedAt").notNull(),
+  signatureVerifiedAt: timestamp("signatureVerifiedAt").notNull(),
+  status: mysqlEnum("status", ["received", "reviewed", "ignored", "failed"]).notNull().default("received"),
+  reviewUserId: int("reviewUserId"),
+  conversationSessionId: int("conversationSessionId"),
+  rawPayload: json("rawPayload").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [
+  foreignKey({ name: "wa_event_review_user_fk", columns: [table.reviewUserId], foreignColumns: [users.id] }),
+  foreignKey({ name: "wa_event_session_fk", columns: [table.conversationSessionId], foreignColumns: [conversationSessions.id] }),
+]);
+
+export type WhatsAppInboundEvent = typeof whatsappInboundEvents.$inferSelect;
+export type InsertWhatsAppInboundEvent = typeof whatsappInboundEvents.$inferInsert;
 
 export const operationalExcelExports = mysqlTable("operational_excel_exports", {
   id: int("id").autoincrement().primaryKey(),

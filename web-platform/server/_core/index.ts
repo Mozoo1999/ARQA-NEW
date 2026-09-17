@@ -7,6 +7,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { registerMobileRoutes } from "../mobileRoutes";
+import { registerWhatsAppBusinessWebhookRoutes } from "../whatsappBusiness";
 import { createContext } from "./context";
 import * as db from "../db";
 import { serveStatic, setupVite } from "./vite";
@@ -33,6 +34,9 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  // Meta signs the exact POST bytes. This route must be registered before the
+  // global JSON parser so only a configured official webhook sees raw bytes.
+  registerWhatsAppBusinessWebhookRoutes(app);
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
