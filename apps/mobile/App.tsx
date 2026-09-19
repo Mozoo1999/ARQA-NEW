@@ -39,6 +39,7 @@ import { analyzeEveryPdfPage } from "./src/documentPdfPipeline";
 import type { DocumentPageAnalysis, MergedDocumentAnalysis } from "../../packages/document-intelligence/src/page-analysis";
 import { pickSingleDeviceContact } from "./src/deviceContactPicker";
 import type { DeviceContactSelection } from "./src/deviceContactSelection";
+import { answerMobileConversation, confirmMobileConversation, importApprovedMobileMessage, rejectMobileConversation, startMobileConversation, type ConversationChannel, type ConversationOutcome, type ConversationProgress } from "./src/mobileConversationApi";
 
 const REDIRECT_URI = ExpoLinking.createURL("oauth/callback");
 const API_BASE_URL = String(Constants.expoConfig?.extra?.apiBaseUrl ?? "").replace(/\/$/, "");
@@ -55,9 +56,6 @@ type ProjectAiAnalysis = { intent: string; title: string; vendorName: string; am
 type OperationalAiAnalysis = { operationType: "vehicle_load" | "receiving_note" | "unsupported" | string; customerName: string; customerTaxNumber: string; vehiclePlateNumber: string; referenceNo: string; operationalDate: string; materialName: string; quantity: string; unit: string; unitPrice: string; totalPrice: string; confidence: number; reviewSummary: string };
 type OperationalMatchLine = { materialName: string; unit: string; loaded: number; received: number; unenteredQuantity: number };
 type OperationalSubmissionResult = { id: number; status: string; match: OperationalMatchLine[]; createdCustomer?: boolean; createdVehicle?: boolean };
-type ConversationChannel = "voice" | "text" | "image" | "document" | "message";
-type ConversationProgress = { sessionId: number; intent: string; fields: Record<string, string>; nextQuestion: string | null; summary: string; readyForReview: boolean };
-type ConversationOutcome = { entityType: string; entityId: number; status: string };
 
 async function loadMobileSession(token: string): Promise<MobileUser> {
   const response = await fetch(`${API_BASE_URL}/api/mobile/session/me`, { headers: { Authorization: `Bearer ${token}` } });
@@ -169,31 +167,19 @@ async function submitOperationalRecord(input: { operationType: "vehicle_load" | 
 }
 
 async function startConversation(channel: ConversationChannel, content: string): Promise<ConversationProgress> {
-  const token = await getMobileBearerToken();
-  const response = await fetch(`${API_BASE_URL}/api/mobile/conversations`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ channel, content }) });
-  if (!response.ok) { const body = await response.json().catch(() => ({})) as { error?: string }; throw new Error(body.error || "تعذر بدء جلسة المساعد التشغيلي."); }
-  return response.json() as Promise<ConversationProgress>;
+  return startMobileConversation({ apiBaseUrl: API_BASE_URL, token: await getMobileBearerToken(), channel, content });
 }
 
 async function answerConversation(sessionId: number, channel: ConversationChannel, content: string): Promise<ConversationProgress> {
-  const token = await getMobileBearerToken();
-  const response = await fetch(`${API_BASE_URL}/api/mobile/conversations/${sessionId}/answers`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ channel, content }) });
-  if (!response.ok) { const body = await response.json().catch(() => ({})) as { error?: string }; throw new Error(body.error || "تعذر حفظ إجابة المستخدم."); }
-  return response.json() as Promise<ConversationProgress>;
+  return answerMobileConversation({ apiBaseUrl: API_BASE_URL, token: await getMobileBearerToken(), sessionId, channel, content });
 }
 
 async function confirmConversation(sessionId: number): Promise<ConversationOutcome> {
-  const token = await getMobileBearerToken();
-  const response = await fetch(`${API_BASE_URL}/api/mobile/conversations/${sessionId}/confirm`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
-  if (!response.ok) { const body = await response.json().catch(() => ({})) as { error?: string }; throw new Error(body.error || "تعذر تأكيد تنفيذ المسودة."); }
-  return response.json() as Promise<ConversationOutcome>;
+  return confirmMobileConversation({ apiBaseUrl: API_BASE_URL, token: await getMobileBearerToken(), sessionId });
 }
 
 async function rejectConversation(sessionId: number): Promise<ConversationOutcome> {
-  const token = await getMobileBearerToken();
-  const response = await fetch(`${API_BASE_URL}/api/mobile/conversations/${sessionId}/reject`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
-  if (!response.ok) { const body = await response.json().catch(() => ({})) as { error?: string }; throw new Error(body.error || "تعذر تسجيل رفض المسودة."); }
-  return response.json() as Promise<ConversationOutcome>;
+  return rejectMobileConversation({ apiBaseUrl: API_BASE_URL, token: await getMobileBearerToken(), sessionId });
 }
 
 async function exportOperationalWorkbook() {
@@ -208,10 +194,7 @@ async function exportOperationalWorkbook() {
 }
 
 async function importApprovedMessage(input: { contactName: string; contactPhone?: string; sourceChannel: "manual_message" | "whatsapp" | "sms"; content: string }) {
-  const token = await getMobileBearerToken();
-  const response = await fetch(`${API_BASE_URL}/api/mobile/messages/import`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ ...input, consentConfirmed: true }) });
-  if (!response.ok) { const body = await response.json().catch(() => ({})) as { error?: string }; throw new Error(body.error || "تعذر إنشاء مسودة الرسالة."); }
-  return response.json() as Promise<{ importId: number; conversation: ConversationProgress }>;
+  return importApprovedMobileMessage({ apiBaseUrl: API_BASE_URL, token: await getMobileBearerToken(), ...input });
 }
 
 async function startNativeAuth(): Promise<MobileUser | null> {

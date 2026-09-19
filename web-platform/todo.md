@@ -335,7 +335,7 @@
 ## Mobile Experience Redesign and Governed Voice Control
 - [x] Introduce a central server-side action registry defining Arabic intent aliases, required fields, field prompts, allowed roles, approval requirements, and execution policy for every supported mobile action
 - [x] Route the existing conversational assistant through the central registry and prohibit unknown, unapproved, or unauthorized data-changing commands from execution
-- [ ] Extract reusable mobile voice-session, API, design-selection, and permission-center modules from the monolithic mobile entry file without breaking current behavior
+- [x] Extract reusable mobile voice-session, API, design-selection, and permission-center modules from the monolithic mobile entry file without breaking current behavior
 - [x] Add an in-app RTL design-choice screen for Command Center, Operational Canvas, and Adaptive Orbit, with an explicit persisted selection and a usable default
 - [x] Implement a permission-aware quick-action voice entry that opens the internal session and waits for user-granted microphone/speech permission
 - [x] Add structured tests for registry field order, role enforcement, approval/rejection handling, and non-executable action policy
