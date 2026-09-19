@@ -28,6 +28,7 @@
     "android": {
       "package": "com.narqa.ebos",
       "permissions": ["RECORD_AUDIO", "CAMERA", "READ_MEDIA_IMAGES", "READ_CONTACTS"],
+      "blockedPermissions": ["android.permission.WRITE_CONTACTS", "android.permission.READ_EXTERNAL_STORAGE", "android.permission.WRITE_EXTERNAL_STORAGE", "android.permission.SYSTEM_ALERT_WINDOW"],
       "adaptiveIcon": {
         "backgroundColor": "#07111F",
         "foregroundImage": "./assets/android-icon-foreground.png",

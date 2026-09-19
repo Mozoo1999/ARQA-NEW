@@ -346,6 +346,7 @@
 - [x] Add a device-permission center and user-driven contacts picker without bulk uploading the address book
 - [x] Document and implement only supported SMS actions; do not claim background inbox monitoring or iOS parity where platform policy prevents it
 - [x] Prepare a WhatsApp Business connection status and server-side webhook design; activate inbound processing only after official Meta credentials, account setup, consent, and webhook verification are supplied
+- [ ] Build and inspect a standalone arm64 Android APK that proves the embedded bundle, package ID, signing, and least-privilege manifest permissions after prebuild
 - [ ] Test multi-page document processing, permission denial, contacts selection, message consent, authorization, auditing, and persisted Excel export end-to-end
 
 ## Reusable Governed Mobile Operations Skill

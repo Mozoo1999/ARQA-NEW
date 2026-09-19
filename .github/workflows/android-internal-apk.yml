@@ -52,6 +52,13 @@ jobs:
           APK=apps/mobile/android/app/build/outputs/apk/release/app-release.apk
           test -f "$APK"
           unzip -l "$APK" | grep -q 'assets/index.android.bundle'
+          AAPT="$(command -v aapt || find "${ANDROID_HOME:?}/build-tools" -type f -name aapt | sort -V | tail -1)"
+          test -x "$AAPT"
+          "$AAPT" dump badging "$APK" | grep -q "package: name='com.narqa.ebos'"
+          ! "$AAPT" dump badging "$APK" | grep -q "uses-permission: name='android.permission.WRITE_CONTACTS'"
+          ! "$AAPT" dump badging "$APK" | grep -q "uses-permission: name='android.permission.READ_EXTERNAL_STORAGE'"
+          ! "$AAPT" dump badging "$APK" | grep -q "uses-permission: name='android.permission.WRITE_EXTERNAL_STORAGE'"
+          ! "$AAPT" dump badging "$APK" | grep -q "uses-permission: name='android.permission.SYSTEM_ALERT_WINDOW'"
 
       - name: Upload standalone internal APK
         uses: actions/upload-artifact@v4
