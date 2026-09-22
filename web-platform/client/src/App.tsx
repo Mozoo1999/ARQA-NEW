@@ -9,6 +9,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 
+const LandingPage = lazy(() => import("./pages/LandingPage"));
 const ControlTower = lazy(() => import("./pages/ControlTower"));
 const SmartPricingPage = lazy(() => import("./pages/smart-pricing/SmartPricingPage"));
 const CommandsPage = lazy(() => import("./pages/commands/CommandsPage"));
@@ -43,10 +44,28 @@ function PageLoader() {
 
 function Router() {
   return (
-    <DashboardLayout>
-      <Suspense fallback={<PageLoader />}>
+    <Suspense fallback={<PageLoader />}>
+      <Switch>
+        <Route path="/" component={LandingPage} />
+        <Route path="/app">
+          <DashboardLayout>
+            <ControlTower />
+          </DashboardLayout>
+        </Route>
+        <Route>
+          <DashboardLayout>
+            <PlatformRoutes />
+          </DashboardLayout>
+        </Route>
+      </Switch>
+    </Suspense>
+  );
+}
+
+function PlatformRoutes() {
+  return (
+    <>
         <Switch>
-          <Route path="/" component={ControlTower} />
           <Route path="/smart-pricing" component={SmartPricingPage} />
           <Route path="/commands" component={CommandsPage} />
           <Route path="/integrations/whatsapp" component={WhatsAppIntegrationPage} />
@@ -70,8 +89,7 @@ function Router() {
           <Route path="/admin/settings" component={SettingsPage} />
           <Route component={NotFound} />
         </Switch>
-      </Suspense>
-    </DashboardLayout>
+    </>
   );
 }
 

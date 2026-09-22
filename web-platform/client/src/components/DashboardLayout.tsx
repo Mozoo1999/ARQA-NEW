@@ -63,7 +63,7 @@ const navGroups = [
   {
     label: "الرئيسية",
     items: [
-      { icon: LayoutDashboard, label: "برج التحكم", path: "/" },
+      { icon: LayoutDashboard, label: "برج التحكم", path: "/app" },
     ],
   },
   {
@@ -248,7 +248,7 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
 
   // Active item detection
   const activeItem = navGroups.flatMap(g => g.items).find(item =>
-    item.path === "/" ? location === "/" : location.startsWith(item.path)
+    item.path === "/app" ? location === "/app" : location.startsWith(item.path)
   );
 
   useEffect(() => {
@@ -320,7 +320,7 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
                 )}
                 <SidebarMenu>
                   {group.items.map((item) => {
-                    const isActive = item.path === "/" ? location === "/" : location.startsWith(item.path);
+                    const isActive = item.path === "/app" ? location === "/app" : location.startsWith(item.path);
                     return (
                       <SidebarMenuItem key={item.path}>
                         <SidebarMenuButton
@@ -404,7 +404,7 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
           <div className="flex h-12 items-center border-b px-6 bg-background/80 backdrop-blur sticky top-0 z-30">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span className="font-medium text-foreground">NARQA EBOS</span>
-              {activeItem && activeItem.path !== "/" && (
+              {activeItem && activeItem.path !== "/app" && (
                 <>
                   <span>/</span>
                   <span className="text-foreground">{activeItem.label}</span>
