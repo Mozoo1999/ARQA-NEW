@@ -351,3 +351,8 @@
 
 ## Reusable Governed Mobile Operations Skill
 - [x] Create and validate a reusable skill for governed Expo operational mobile development, including voice authorization, multi-page document review, privacy permissions, official messaging boundaries, test gates, and release verification
+
+## Operational Home Experience Remediation
+- [x] Replace the authenticated web Control Tower with a responsive, data-backed operational control surface: real metrics, pending-review signals, audit activity, and links to implemented voice, document, purchase, and report workflows
+- [x] Prioritize native mobile home actions for Arabic voice intake, document review, invoice draft, and report export while retaining in-app access to the remaining operational modules
+- [x] Extend and validate the governed Expo operational mobile skill with a mandatory real-control-surface and responsive verification rule
