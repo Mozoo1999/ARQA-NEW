@@ -356,3 +356,4 @@
 - [x] Replace the authenticated web Control Tower with a responsive, data-backed operational control surface: real metrics, pending-review signals, audit activity, and links to implemented voice, document, purchase, and report workflows
 - [x] Prioritize native mobile home actions for Arabic voice intake, document review, invoice draft, and report export while retaining in-app access to the remaining operational modules
 - [x] Extend and validate the governed Expo operational mobile skill with a mandatory real-control-surface and responsive verification rule
+- [x] Add executable tests for rejected message consent, review-only message persistence, authenticated workbook export provenance, and device-contact permission denial before picker access
