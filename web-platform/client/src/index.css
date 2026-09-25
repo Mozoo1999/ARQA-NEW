@@ -250,3 +250,178 @@
   .landing-reveal:nth-child(4) { animation-delay: 210ms; }
   .landing-nav { animation: landing-rise 480ms cubic-bezier(0.23, 1, 0.32, 1) both; }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   PROTECTED WORKSPACE HANDOFF
+───────────────────────────────────────────────────────────────────────────── */
+
+.workspace-boot {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  overflow: hidden;
+  padding: 1.5rem;
+  background:
+    radial-gradient(circle at 86% 8%, rgba(34, 211, 238, 0.15), transparent 27rem),
+    radial-gradient(circle at 8% 96%, rgba(16, 185, 129, 0.09), transparent 29rem),
+    #f6f7f4;
+  color: #102432;
+}
+
+.workspace-boot__ambient {
+  position: absolute;
+  z-index: -1;
+  display: block;
+  border-radius: 999px;
+  filter: blur(0.5px);
+  pointer-events: none;
+}
+
+.workspace-boot__ambient--one {
+  top: -10rem;
+  right: -7rem;
+  width: 22rem;
+  height: 22rem;
+  border: 1px solid rgba(8, 145, 178, 0.18);
+}
+
+.workspace-boot__ambient--two {
+  bottom: -12rem;
+  left: -10rem;
+  width: 25rem;
+  height: 25rem;
+  border: 1px solid rgba(16, 185, 129, 0.13);
+}
+
+.workspace-boot__card {
+  width: min(100%, 31rem);
+  border: 1px solid rgba(203, 213, 225, 0.85);
+  border-radius: 1.75rem;
+  background: rgba(255, 255, 255, 0.92);
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+  box-shadow: 0 24px 70px rgba(16, 36, 50, 0.1);
+  backdrop-filter: blur(16px);
+}
+
+.workspace-boot__identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #102432;
+  font-size: 0.85rem;
+}
+
+.workspace-boot__identity strong { font-weight: 900; letter-spacing: -0.02em; }
+.workspace-boot__identity small { display: block; margin-top: 0.1rem; color: #94a3b8; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.14em; }
+
+.workspace-boot__mark {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 0.85rem;
+  background: #102432;
+  color: #b9f4fa;
+  font-size: 1rem;
+  font-weight: 900;
+  box-shadow: 0 9px 18px rgba(16, 36, 50, 0.15);
+}
+
+.workspace-boot__progress {
+  height: 0.3rem;
+  margin-top: 2.25rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e9eff1;
+}
+
+.workspace-boot__progress > span {
+  display: block;
+  width: 45%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #0f8aa1, #55d8e7, #0f8aa1);
+}
+
+.workspace-boot__eyebrow {
+  margin: 1.85rem 0 0;
+  color: #0f8aa1;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.workspace-boot h1 {
+  margin: 0.55rem 0 0;
+  color: #102432;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+}
+
+.workspace-boot__copy {
+  margin: 0.65rem 0 0;
+  color: #64748b;
+  font-size: 0.92rem;
+  line-height: 1.8;
+}
+
+.workspace-boot__stages {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #edf1f2;
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.workspace-boot__stages span { display: flex; align-items: center; gap: 0.65rem; }
+.workspace-boot__stages i { display: block; width: 0.45rem; height: 0.45rem; border-radius: 999px; background: #22c5d5; box-shadow: 0 0 0 4px rgba(34, 197, 213, 0.13); }
+.workspace-boot__retry { margin-top: 1.75rem; border-radius: 0.9rem; background: #102432; padding: 0.75rem 1rem; color: #fff; font-size: 0.9rem; font-weight: 800; }
+.workspace-boot--error .workspace-boot__progress, .workspace-boot--error .workspace-boot__stages { display: none; }
+
+.workspace-platform-shell { min-height: 100dvh; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .workspace-boot__card {
+    animation: workspace-boot-in 420ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  .workspace-boot__progress > span {
+    animation: workspace-progress 1.05s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+  }
+
+  .workspace-boot.is-leaving .workspace-boot__card {
+    animation: workspace-boot-out 180ms cubic-bezier(0.4, 0, 1, 1) both;
+  }
+
+  .workspace-platform-shell {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.992);
+  }
+
+  .workspace-platform-shell.is-ready {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    transition: opacity 360ms cubic-bezier(0.23, 1, 0.32, 1), transform 420ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+}
+
+@keyframes workspace-boot-in {
+  from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.975); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes workspace-boot-out {
+  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  to { opacity: 0; transform: translate3d(0, -7px, 0) scale(0.99); }
+}
+
+@keyframes workspace-progress {
+  0% { transform: translateX(130%); }
+  100% { transform: translateX(-310%); }
+}

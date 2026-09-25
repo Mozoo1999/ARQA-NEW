@@ -360,3 +360,4 @@
 - [x] Replace the image-led public landing with a responsive operational entry that explains the real review and authorization flow without mock business metrics
 - [x] Split the public bootstrap from the protected platform runtime, provide a visible protected-workspace loading state, and remove development instrumentation from production HTML
 - [x] Validate the public entry at desktop, tablet, and phone widths; verify that it makes no protected `/api/trpc` request before the user enters the workspace
+- [x] Add an accessible animated protected-workspace handoff with a staged loader, gentle platform entrance, recovery state, and `prefers-reduced-motion` support

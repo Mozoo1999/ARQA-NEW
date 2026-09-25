@@ -3,6 +3,7 @@ import { COOKIE_NAME, UNAUTHED_ERR_MSG } from "@shared/const";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
+import { useEffect, useState, type ReactNode } from "react";
 import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
@@ -48,12 +49,25 @@ const trpcClient = trpc.createClient({
   ],
 });
 
+function PlatformEntrance({ children }: { children: ReactNode }) {
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => setIsReady(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  return <div className={`workspace-platform-shell${isReady ? " is-ready" : ""}`}>{children}</div>;
+}
+
 export function mountPlatform(root: HTMLElement) {
   createRoot(root).render(
-    <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>
-    </trpc.Provider>,
+    <PlatformEntrance>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
+      </trpc.Provider>
+    </PlatformEntrance>,
   );
 }
