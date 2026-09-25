@@ -211,3 +211,152 @@
 - [x] Verify the replacement APK archive contains index.android.bundle and does not require Metro
 - [x] Publish a corrected APK and update all active documentation to the standalone Release APK; static Debug storage URL remains deprecated but cannot be revoked
 - [x] Verify that the old Debug storage path remains technically reachable under static-storage policy, record it as permanently deprecated, and keep all active documentation on the standalone Release APK
+
+## Native Voice Intake and OCR Accuracy Correction
+- [x] Diagnose why the installed mobile app did not capture real microphone speech: the prior UI only toggled local state and never called a native recognizer
+- [x] Add actual Arabic speech-to-text capture with permission handling, review state, and no automatic execution before approval
+- [x] Add native document/image intake that opens the image library or camera, extracts on-device text, and routes approval to the existing OCR review workflow
+- [x] Improve OCR preprocessing and review guidance: resize input images, make extracted fields editable, and flag sparse or incomplete OCR drafts for manual correction
+- [x] Rebuild and validate a standalone APK with the corrected voice and image intake flows through GitHub Actions run 32794556048
+- [ ] Pass the selected native image and editable OCR draft fields into the authenticated OCR review workflow instead of opening it as a separate page
+- [ ] Install the rebuilt APK on a device or emulator and document microphone capture, Arabic transcription, image OCR, review handoff, and failure cases
+
+## Mobile Home, Document Upload, and Analysis Refinement
+- [x] Replace the mobile home screen with direct operational launchers for sources, suppliers, customer contacts, projects, voice intake, image/document analysis, and financial reports
+- [x] Add customer-contact launcher mapped transparently to the existing user/contact directory; a dedicated customer CRM module is not currently present in the audited backend
+- [x] Add actual document-file selection (PDF and supported document images) in addition to camera and image-library intake
+- [x] Improve document image preparation and separate the user-visible review result from unsupported or low-quality OCR cases
+- [x] Verify redesigned mobile navigation and document selection flows, then rebuild a standalone APK through GitHub Actions run 32797202992
+- [ ] Add a dedicated customer data module and authenticated mobile integration if customer CRM records are required beyond the existing user/contact directory
+
+## Native In-App Operational Navigation Correction
+- [x] Replace every home-page launcher that currently opens the web workspace with a local mobile screen or local tab transition
+- [x] Add internal mobile workspace screens for sources, suppliers, customer contacts, projects, and financial reports
+- [x] Ensure native voice and document-analysis launchers remain within the mobile application
+- [x] Show an explicit in-app authentication/data-connection state instead of redirecting unexpectedly to the web workspace
+- [x] Verify compilation and rebuild a standalone Android APK through GitHub Actions run 32850117085; physical navigation verification remains in the device-test task
+
+## Native Invoice Draft Entry
+- [x] Add an invoice-issuance icon to the mobile home screen and route it to a local in-app invoice workspace
+- [x] Add validated invoice-draft fields and a human review step without posting an invoice automatically
+- [x] Document the authenticated backend posting requirement before a draft can be issued as an official invoice
+
+## Voice Shortcut From Application Icon
+- [x] Verify Android and iOS platform limits for two-second application-icon press and global headset/volume-button interception
+- [x] Add a native application shortcut that opens the in-app voice-command screen
+- [x] Request microphone permission and start recognition only after a clear in-app user action or shortcut confirmation
+- [ ] Build and validate the shortcut behavior on Android, and document the corresponding iOS limitation or alternative
+
+## Eliminate Remaining External Workspace Transitions
+- [x] Audit every browser-opening call and every home, voice, document, and review action in the mobile source
+- [x] Remove all automatic external workspace transitions; the sole remaining browser session is the explicitly selected OAuth sign-in flow when configured
+- [x] Replace voice and OCR review browser launch actions with native in-app review status while native authenticated handoff remains unavailable
+- [x] Build a replacement APK through GitHub Actions run 32869901649 and verify by source-policy test that all primary actions remain inside the application before user testing
+
+## Native PDF Analysis Without Web Workspace
+- [x] Identify a compatible native PDF text-extraction and page-rendering approach for Expo Android and iOS
+- [x] Extract selectable-text PDF content locally and send the first rendered image page through the local OCR path when necessary
+- [x] Present extracted PDF text and editable financial fields in the existing in-app review surface with accurate quality guidance
+- [x] Add tests for PDF text extraction and low-quality or unsupported PDF handling
+- [x] Build and validate a standalone APK that analyses supported PDFs without opening the web workspace through GitHub Actions run 32895159099
+
+## Fully In-App Intake, Analysis, and Voice Confirmation
+- [x] Keep image and document selection, analysis, editable fields, and human confirmation in one local mobile flow
+- [x] Keep Arabic voice capture, intent analysis, editable command draft, and user confirmation in one local mobile flow
+- [ ] Store reviewed local drafts securely on-device pending authenticated submission, with explicit user-controlled deletion
+- [x] Verify no primary intake, analysis, or voice action launches the browser or workspace automatically
+
+## Native Mobile Backend and AI Integration
+- [x] Audit the existing OAuth callback, session, tRPC contracts, and server AI interfaces for a mobile-safe integration path
+- [x] Add a mobile-native authenticated API session that preserves user intent without sending users to the web workspace
+- [x] Connect mobile suppliers, projects, customer contacts, reports, and approved drafts to live database queries and mutations with authorization
+- [x] Route approved voice, image, document, and PDF text analysis to the project AI model through server-side APIs with human review before persistence
+- [ ] Add integration tests covering authorization, live data reads, OAuth callback completion, and approved analysis submission from a real mobile bearer session
+- [ ] Build and verify a standalone APK against the authenticated backend and document any remaining iOS or secret prerequisites
+
+## Mobile OAuth Redirect URI Correction
+- [x] Identify the rejected backend callback (`*.a.run.app`) and the required public frontend callback on `narqaebos-c2nmdy4n.manus.space`
+- [x] Route mobile OAuth through an allowed public callback endpoint before returning the verified Bearer token to the NARQA deep link
+- [ ] Verify OAuth start, provider redirect, callback exchange, nonce validation, and return to `narqa-ebos://oauth/callback`
+- [x] Rebuild APK and document the corrected OAuth callback configuration
+
+## Professional Intake Review and Voice Draft Execution
+- [x] Replace generic OCR guidance with a compact analysis status, extracted-value completeness, and next-action panel
+- [x] Add explicit local review actions for correcting fields and submitting a confirmed `pending_review` draft with a visible database result
+- [x] Make voice-command submission require and display authenticated state before enabling database insertion
+- [x] Surface a structured success or failure result with draft ID after user-confirmed voice and document submission
+- [ ] Add automated tests for successful and rejected draft submission paths and rebuild a standalone APK
+
+## Vehicle Loads, Receiving Notes, and Executable Voice Intake
+- [x] Audit existing customer, vehicle, inventory, smart-intake, and audit-log entities against the required vehicle-load and receiving-note workflow
+- [x] Add normalized records for vehicles, vehicle-load drafts, receiving notes, line quantities, prices, source material types, and client associations
+- [x] Record entry timestamp, authenticated user, entry method, source document, analysis provenance, and confirmation status for every draft and posted record
+- [x] Build server matching logic that compares each vehicle draft to customer and vehicle records and reports unentered or unmatched quantities
+- [x] Create a structured NARQA AI extraction contract for vehicle loads and receiving notes, including vehicle, client, raw material, price, date, and quantity
+- [x] Present extracted load/receiving fields, match results, discrepancies, and approval actions in the mobile app before persistence
+- [x] Convert a confirmed voice command into a typed operational draft and apply only the permitted database operation after explicit confirmation
+- [x] Configure the long-press application shortcut to immediately open and start the voice draft flow, subject to device permission and operating-system limits
+- [x] Add schema, API, validation, matching, analysis-schema, and confirmation tests; build the updated APK through GitHub Actions run 32972242646
+- [ ] Test the updated APK on a physical device with authenticated OAuth, a vehicle load, a receiving note, and a confirmed voice command
+
+## Conversational Operational Assistant, Excel, and Messaging
+- [x] Audit existing smart-intake, voice, document, audit-log, and export behavior against the required multi-turn assistant workflow
+- [x] Design normalized conversation sessions, user questions, answers, collected fields, draft state, confirmation state, and execution outcome records
+- [x] Implement a multi-turn Arabic assistant that asks typed and spoken clarification questions until it has enough verified fields for supplier, payment, receiving note, invoice, statement, approval, or operational draft
+- [x] Add TTS for questions and result summaries, plus persistent textual transcripts and user corrections before execution
+- [x] Add explicit user-approved execution that records date, user, source channel, transcript, analysis provenance, and resulting database IDs
+- [x] Export approved operational records to a structured Excel workbook with separate operational, audit, and exceptions sheets
+- [x] Add multi-image and multi-document selection with per-file analysis results, validation errors, and a combined review draft
+- [x] Define official WhatsApp and SMS integration boundaries, consent, contact selection, and secure webhook/API requirements; do not use unofficial scraping or simulated message data
+- [x] Implement supported contact selection and draft creation from manually selected/approved message content before an official messaging connector is configured
+- [x] Ensure the supported app-icon quick action starts the conversational voice draft directly, while documenting Android/iOS limits on raw launcher-icon and global button interception
+- [ ] Add unit, API, authorization, and end-to-end tests for conversational clarification, approval, database insertion, Excel export, and rejected message content
+
+## Native OCR Runtime and Continuous Voice-Control Correction
+- [x] Reproduce and diagnose the undefined `extractTextFromImage` native-module failure: expo-text-extractor has no Android native implementation in the installed package
+- [x] Add a guarded native OCR adapter with a server-side NARQA visual-AI fallback and user-visible error handling when an OCR module is unavailable
+- [ ] Verify every native module is included in Android release autolinking and fail the build check when the OCR adapter is unavailable
+- [x] Start voice recognition automatically after each spoken assistant question, capture a spoken answer, and continue the same conversation session
+- [x] Recognize explicit voice approval or rejection only after reading the review summary and require authentication for database execution
+- [x] Define and enforce an allowlist of voice-controllable actions, with confirmation and authorization before any data-changing operation
+- [x] Add tests for OCR fallback, voice-turn progression, approval/rejection, and blocked unauthorized execution
+- [ ] Build and physically test a replacement APK using image analysis, multi-turn spoken answers, voice approval, and permitted database insertion
+
+## Vehicle Trip Voice Entry and Extended Listening
+- [x] Add a dedicated `vehicle_trip` conversational intent triggered by Arabic add/insert vehicle-trip voice commands
+- [x] Collect vehicle plate number, loading location, unloading location, customer name, vehicle cubic capacity, trip count, and notes as required review fields
+- [x] Add a normalized vehicle-trip record linked to vehicle, customer, authenticated user, conversation session, entry method, confirmation timestamp, and audit log
+- [x] Read every missing-field question aloud, listen for the spoken answer, and preserve the typed alternative in the same session
+- [x] Read the complete vehicle-trip draft aloud and accept explicit spoken approval or rejection before database insertion
+- [x] Double the speech-listening window and add a visible extra-time control that restarts listening without losing the current question
+- [x] Add validation tests for required trip fields, positive cubic capacity and trip count, authenticated confirmation, rejection, and audit provenance
+- [ ] Build and physically test an APK using a complete Arabic vehicle-trip voice scenario
+
+## Mobile Experience Redesign and Governed Voice Control
+- [x] Introduce a central server-side action registry defining Arabic intent aliases, required fields, field prompts, allowed roles, approval requirements, and execution policy for every supported mobile action
+- [x] Route the existing conversational assistant through the central registry and prohibit unknown, unapproved, or unauthorized data-changing commands from execution
+- [x] Extract reusable mobile voice-session, API, design-selection, and permission-center modules from the monolithic mobile entry file without breaking current behavior
+- [x] Add an in-app RTL design-choice screen for Command Center, Operational Canvas, and Adaptive Orbit, with an explicit persisted selection and a usable default
+- [x] Implement a permission-aware quick-action voice entry that opens the internal session and waits for user-granted microphone/speech permission
+- [x] Add structured tests for registry field order, role enforcement, approval/rejection handling, and non-executable action policy
+
+## Advanced Multi-Page Document Intelligence and Integrations
+- [x] Render and analyze every supported PDF page through the authenticated visual-analysis path, with bounded file/page policy and no silent first-page fallback
+- [x] Preserve per-page evidence, confidence, unreadable-page state, and deterministic field-conflict review in mobile and server contracts
+- [x] Add a device-permission center and user-driven contacts picker without bulk uploading the address book
+- [x] Document and implement only supported SMS actions; do not claim background inbox monitoring or iOS parity where platform policy prevents it
+- [x] Prepare a WhatsApp Business connection status and server-side webhook design; activate inbound processing only after official Meta credentials, account setup, consent, and webhook verification are supplied
+- [x] Build and inspect a standalone arm64 Android APK that proves the embedded bundle, package ID, signing, and least-privilege manifest permissions after prebuild
+- [ ] Test multi-page document processing, permission denial, contacts selection, message consent, authorization, auditing, and persisted Excel export end-to-end
+
+## Reusable Governed Mobile Operations Skill
+- [x] Create and validate a reusable skill for governed Expo operational mobile development, including voice authorization, multi-page document review, privacy permissions, official messaging boundaries, test gates, and release verification
+
+## Operational Home Experience Remediation
+- [x] Replace the authenticated web Control Tower with a responsive, data-backed operational control surface: real metrics, pending-review signals, audit activity, and links to implemented voice, document, purchase, and report workflows
+- [x] Prioritize native mobile home actions for Arabic voice intake, document review, invoice draft, and report export while retaining in-app access to the remaining operational modules
+- [x] Extend and validate the governed Expo operational mobile skill with a mandatory real-control-surface and responsive verification rule
+- [x] Add executable tests for rejected message consent, review-only message persistence, authenticated workbook export provenance, and device-contact permission denial before picker access
+- [x] Replace the image-led public landing with a responsive operational entry that explains the real review and authorization flow without mock business metrics
+- [x] Split the public bootstrap from the protected platform runtime, provide a visible protected-workspace loading state, and remove development instrumentation from production HTML
+- [x] Validate the public entry at desktop, tablet, and phone widths; verify that it makes no protected `/api/trpc` request before the user enters the workspace

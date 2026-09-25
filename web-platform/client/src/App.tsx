@@ -1,7 +1,6 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch } from "wouter";
-import DashboardLayout from "./components/DashboardLayout";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
@@ -10,6 +9,7 @@ import { lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 
 const LandingPage = lazy(() => import("./pages/LandingPage"));
+const DashboardLayout = lazy(() => import("./components/DashboardLayout"));
 const ControlTower = lazy(() => import("./pages/ControlTower"));
 const SmartPricingPage = lazy(() => import("./pages/smart-pricing/SmartPricingPage"));
 const CommandsPage = lazy(() => import("./pages/commands/CommandsPage"));

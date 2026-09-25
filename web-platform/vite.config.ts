@@ -150,10 +150,14 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
+const isDevelopment = process.env.NODE_ENV === "development";
 
 export default defineConfig({
-  plugins,
+  plugins: [
+    react(),
+    tailwindcss(),
+    ...(isDevelopment ? [jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()] : []),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
@@ -167,6 +171,23 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        onlyExplicitManualChunks: true,
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return undefined;
+          if (id.includes("@radix-ui") || id.includes("cmdk") || id.includes("vaul")) return "ui-runtime";
+          if (id.includes("@tanstack") || id.includes("@trpc") || id.includes("superjson")) return "data-runtime";
+          if (id.includes("xlsx")) return "spreadsheet-runtime";
+          if (id.includes("tesseract")) return "ocr-runtime";
+          if (id.includes("recharts")) return "charts-runtime";
+          if (id.includes("lucide-react")) return "icons-runtime";
+          if (id.includes("react") || id.includes("scheduler")) return "react-runtime";
+          return "vendor-runtime";
+        },
+      },
+    },
   },
   server: {
     host: true,

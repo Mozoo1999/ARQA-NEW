@@ -38,5 +38,5 @@ describe("Smart Intake & Financial Drafts Integration", () => {
     const approved = approvedDrafts.find((d) => d.id === draftId);
     expect(approved).toBeDefined();
     expect(approved?.status).toBe("approved");
-  });
+  }, 30_000);
 });

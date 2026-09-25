@@ -40,6 +40,7 @@ import type { DocumentPageAnalysis, MergedDocumentAnalysis } from "../../package
 import { pickSingleDeviceContact } from "./src/deviceContactPicker";
 import type { DeviceContactSelection } from "./src/deviceContactSelection";
 import { answerMobileConversation, confirmMobileConversation, importApprovedMobileMessage, rejectMobileConversation, startMobileConversation, type ConversationChannel, type ConversationOutcome, type ConversationProgress } from "./src/mobileConversationApi";
+import { createAuthenticatedMobileDraft } from "./src/mobileDraftApi";
 
 const REDIRECT_URI = ExpoLinking.createURL("oauth/callback");
 const API_BASE_URL = String(Constants.expoConfig?.extra?.apiBaseUrl ?? "").replace(/\/$/, "");
@@ -131,10 +132,7 @@ async function analyzeOperationalWithProjectAi(sourceType: "vehicle_load" | "rec
 }
 
 async function submitMobileDraft(input: { sourceType: "ocr" | "voice_command"; title: string; intent: string; vendorName?: string; amount?: string; currency: string; documentDate?: string; referenceNo?: string; taxNo?: string; rawContent: string; confidence?: string }) {
-  const token = await getMobileBearerToken();
-  const response = await fetch(`${API_BASE_URL}/api/mobile/drafts`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(input) });
-  if (!response.ok) throw new Error(response.status === 401 ? "انتهت جلسة الجوال. سجّل الدخول مجدداً." : "تعذر إرسال المسودة للمراجعة في قاعدة البيانات.");
-  return response.json() as Promise<{ id: number; status: string }>;
+  return createAuthenticatedMobileDraft({ apiBaseUrl: API_BASE_URL, token: await getMobileBearerToken(), ...input });
 }
 
 async function submitOperationalRecord(input: { operationType: "vehicle_load" | "receiving_note"; analysis: OperationalAiAnalysis; rawContent: string; entryMethod: "voice" | "camera" | "image" | "pdf" | "manual"; createMissingReferences: boolean; sourceDocumentName?: string }) {
