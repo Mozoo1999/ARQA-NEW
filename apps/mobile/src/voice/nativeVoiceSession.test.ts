@@ -20,4 +20,10 @@ describe("native launcher voice session policy", () => {
     expect(moduleSource).toContain("EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS: 20_000");
     expect(appSource).toContain("أحتاج وقتاً إضافياً (20 ثانية)");
   });
+
+  it("keeps follow-up recognition continuous only while the visible native session is active", () => {
+    expect(moduleSource).toContain("continuous: true");
+    expect(moduleSource).toContain("stopVoiceSession");
+    expect(appSource).toContain("التسجيل لا يعمل في الخلفية");
+  });
 });

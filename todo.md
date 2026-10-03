@@ -361,3 +361,12 @@
 - [x] Split the public bootstrap from the protected platform runtime, provide a visible protected-workspace loading state, and remove development instrumentation from production HTML
 - [x] Validate the public entry at desktop, tablet, and phone widths; verify that it makes no protected `/api/trpc` request before the user enters the workspace
 - [x] Add an accessible animated protected-workspace handoff with a staged loader, gentle platform entrance, recovery state, and `prefers-reduced-motion` support
+
+## Contextual Operating Intelligence
+- [x] Add a user-controlled, authenticated operating-context profile for language, dialect, sector, business level, default unit, and bounded local material vocabulary
+- [x] Snapshot the selected operating context into every new conversation session so a reviewed command retains its original interpretation context
+- [x] Adapt vehicle-load questions for construction-company and supply-office work without treating profile assumptions as source evidence
+- [x] Provide an in-app RTL context screen with loading, unauthenticated, validation, save, success, and recoverable error states
+- [x] Apply the user-selected context as assistive-only instruction to server-side text, image, PDF-page, and operational AI analysis prompts
+- [x] Correct the mobile customer workspace to read real operational customer rows rather than internal user contacts
+- [ ] Validate context selection, native voice dialect behaviour, and sector-specific conversational execution on physical Android and iOS/iPad devices

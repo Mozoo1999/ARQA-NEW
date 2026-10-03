@@ -39,4 +39,41 @@ describe("mobile AI input validation", () => {
     expect(__mobileRouteTestUtils.imageAnalysisSchema.safeParse({ sourceType: "camera", imageDataUrl: "data:application/pdf;base64,abc" }).success).toBe(false);
     expect(__mobileRouteTestUtils.imageAnalysisSchema.safeParse({ sourceType: "image", imageDataUrl: `data:image/png;base64,${"a".repeat(8_000_000)}` }).success).toBe(false);
   });
+
+  it("accepts sequential PDF page images and explicitly rejects unsupported page counts", () => {
+    const valid = { pageNumber: 2, totalPages: 4, fileName: "receiving.pdf", imageDataUrl: `data:image/jpeg;base64,${"a".repeat(64)}` };
+    expect(__mobileRouteTestUtils.documentPageAnalysisSchema.safeParse(valid).success).toBe(true);
+    expect(__mobileRouteTestUtils.documentPageAnalysisSchema.safeParse({ ...valid, pageNumber: 5 }).success).toBe(false);
+    expect(__mobileRouteTestUtils.documentPageAnalysisSchema.safeParse({ ...valid, pageNumber: 1, totalPages: __mobileRouteTestUtils.MAX_DOCUMENT_PAGES + 1 }).success).toBe(false);
+    expect(__mobileRouteTestUtils.documentPageAnalysisSchema.safeParse({ ...valid, imageDataUrl: "data:application/pdf;base64,abc" }).success).toBe(false);
+  });
+});
+
+describe("mobile operational context validation", () => {
+  const profile = { primaryLanguage: "ar", dialect: "ar-EG", sector: "construction", businessLevel: "construction_company", defaultUnit: "متر مكعب", materialVocabulary: ["سن", "رمل"] };
+
+  it("accepts a bounded, user-controlled sector context", () => {
+    expect(__mobileRouteTestUtils.operationalProfileSchema.safeParse(profile).success).toBe(true);
+  });
+
+  it("rejects unsupported sectors and oversized vocabularies", () => {
+    expect(__mobileRouteTestUtils.operationalProfileSchema.safeParse({ ...profile, sector: "unknown" }).success).toBe(false);
+    expect(__mobileRouteTestUtils.operationalProfileSchema.safeParse({ ...profile, materialVocabulary: Array.from({ length: 33 }, (_, index) => `مادة ${index}`) }).success).toBe(false);
+  });
+});
+
+describe("mobile dashboard live-data mapping", () => {
+  it("maps customer workspace records from operational customers, not user contacts", () => {
+    const dashboard = __mobileRouteTestUtils.buildMobileDashboardPayload({
+      user: { id: 1, name: "مدير", role: "admin" },
+      suppliers: [{ id: 10, name: "مورد" }],
+      projects: [],
+      contacts: [{ id: 3, name: "مستخدم داخلي", email: "user@example.com", phone: null, role: "user" }],
+      controlTower: { totalCustomers: 1 },
+      drafts: [],
+      operationalReferences: { customers: [{ id: 20, name: "عميل تشغيلي", code: "CUS-20" }], vehicles: [], materialTypes: [] },
+    });
+    expect(dashboard.customers).toEqual([{ id: 20, name: "عميل تشغيلي", code: "CUS-20" }]);
+    expect(dashboard.contacts).toEqual([expect.objectContaining({ id: 3, name: "مستخدم داخلي" })]);
+  });
 });

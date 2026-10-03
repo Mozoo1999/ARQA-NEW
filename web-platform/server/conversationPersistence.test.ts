@@ -20,10 +20,11 @@ function databaseForMessageImport() {
     .mockResolvedValueOnce([{ insertId: 43 }])
     .mockResolvedValueOnce([{ insertId: 44 }]);
   const orderBy = vi.fn().mockResolvedValue([]);
+  const limit = vi.fn().mockResolvedValue([]);
   const database = {
     select: vi.fn(() => ({
       from: vi.fn(() => ({
-        where: vi.fn(() => ({ orderBy })),
+        where: vi.fn(() => ({ orderBy, limit })),
       })),
     })),
     insert: vi.fn(() => ({ values })),

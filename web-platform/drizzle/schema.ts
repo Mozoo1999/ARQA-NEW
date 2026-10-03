@@ -36,6 +36,28 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
 // ─────────────────────────────────────────────────────────────────────────────
+// OPERATIONAL CONTEXT PROFILE
+// A user-controlled context for dialect, sector and unit vocabulary. It guides
+// conversational questions and analysis prompts but never bypasses approval.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const operationalProfiles = mysqlTable("operational_profiles", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique().references(() => users.id),
+  primaryLanguage: mysqlEnum("primaryLanguage", ["ar", "en"]).notNull().default("ar"),
+  dialect: varchar("dialect", { length: 24 }).notNull().default("ar-SA"),
+  sector: mysqlEnum("sector", ["construction", "supply", "logistics", "general"]).notNull().default("general"),
+  businessLevel: mysqlEnum("businessLevel", ["construction_company", "supply_office", "logistics_operator", "general"]).notNull().default("general"),
+  defaultUnit: varchar("defaultUnit", { length: 32 }),
+  materialVocabulary: json("materialVocabulary"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type OperationalProfile = typeof operationalProfiles.$inferSelect;
+export type InsertOperationalProfile = typeof operationalProfiles.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
 // MODULE 2: ORGANIZATION
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -529,6 +551,7 @@ export const conversationSessions = mysqlTable("conversation_sessions", {
   intent: varchar("intent", { length: 96 }),
   sourceTranscript: text("sourceTranscript"),
   collectedFields: json("collectedFields"),
+  contextSnapshot: json("contextSnapshot"),
   nextQuestion: text("nextQuestion"),
   summary: text("summary"),
   analysisModel: varchar("analysisModel", { length: 128 }),

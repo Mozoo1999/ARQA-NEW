@@ -31,7 +31,7 @@ export async function requestArabicVoicePermission() {
   }
 }
 
-export async function beginArabicVoiceSession(): Promise<VoiceSessionStartResult> {
+export async function beginArabicVoiceSession(languageTag = "ar-SA", additionalContext: string[] = []): Promise<VoiceSessionStartResult> {
   try {
     const permission = await requestArabicVoicePermission();
     if (!permission.granted) {
@@ -40,13 +40,14 @@ export async function beginArabicVoiceSession(): Promise<VoiceSessionStartResult
     if (!ExpoSpeechRecognitionModule.isRecognitionAvailable()) {
       return { started: false, reason: "خدمة التعرف على الكلام غير متاحة. فعّل خدمة التعرف الافتراضية في الجهاز." };
     }
+    const lang = /^(ar|en)(?:-[A-Z]{2})?$/i.test(languageTag) ? languageTag : "ar-SA";
     ExpoSpeechRecognitionModule.start({
-      lang: "ar-SA",
+      lang,
       interimResults: true,
       maxAlternatives: 1,
-      continuous: false,
+      continuous: true,
       addsPunctuation: true,
-      contextualStrings: arabicRecognitionContext,
+      contextualStrings: Array.from(new Set([...arabicRecognitionContext, ...additionalContext.map(value => value.trim()).filter(Boolean)])).slice(0, 64),
       androidIntentOptions: {
         EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS: 10_000,
         EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS: 10_000,

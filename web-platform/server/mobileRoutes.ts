@@ -7,6 +7,7 @@ import { invokeLLM } from "./_core/llm";
 import { sdk } from "./_core/sdk";
 import { documentPageAnalysisOutputSchema, type DocumentPageAnalysis } from "./documentPageAnalysis";
 import { attachWhatsAppConversation, canReviewWhatsAppInbound, claimWhatsAppInboundEventForReview, getWhatsAppConnectionStatus } from "./whatsappBusiness";
+import { OPERATIONAL_LEVELS, OPERATIONAL_SECTORS, getOperationalProfile, saveOperationalProfile } from "./operationalProfile";
 
 const decimalString = z.string().regex(/^\d+(?:\.\d{1,3})?$/);
 const entryMethodSchema = z.enum(["voice", "camera", "image", "pdf", "manual"]);
@@ -59,6 +60,15 @@ const conversationStartSchema = z.object({
 const conversationAnswerSchema = z.object({
   channel: z.enum(["voice", "text", "image", "document", "message"]),
   content: z.string().min(1).max(100_000),
+});
+
+const operationalProfileSchema = z.object({
+  primaryLanguage: z.enum(["ar", "en"]),
+  dialect: z.string().trim().min(2).max(24),
+  sector: z.enum(OPERATIONAL_SECTORS),
+  businessLevel: z.enum(OPERATIONAL_LEVELS),
+  defaultUnit: z.string().trim().max(32),
+  materialVocabulary: z.array(z.string().trim().min(1).max(64)).max(32),
 });
 
 const approvedMessageImportSchema = z.object({
@@ -149,13 +159,54 @@ function numericAmount(line: { quantity: string; unitPrice?: string; totalPrice?
   return (Number(line.quantity) * Number(line.unitPrice)).toFixed(2);
 }
 
+async function operationalAnalysisContext(userId: number) {
+  const profile = await getOperationalProfile(userId);
+  const vocabulary = profile.materialVocabulary.length ? profile.materialVocabulary.join(", ") : "none";
+  return `User-selected operating context (assistive only; never treat it as evidence): language=${profile.primaryLanguage}; dialect=${profile.dialect}; sector=${profile.sector}; business level=${profile.businessLevel}; default unit=${profile.defaultUnit || "none"}; local material vocabulary=${vocabulary}.`;
+}
+
 async function createGenericIntakeDraft(userId: number, input: { sourceType: "ocr" | "voice_command"; title: string; intent: string; rawContent: string; confidence?: string; metadata?: Record<string, unknown> }) {
   const id = await db.createSmartIntakeDraft({ sourceType: input.sourceType, title: input.title, intent: input.intent, rawContent: input.rawContent, confidence: input.confidence ?? null, status: "pending_review", metadata: input.metadata ?? null });
   await db.logActivity({ userId, module: "smart_intake", action: "operational_draft_created", entityType: "smart_intake_draft", entityId: id, entityLabel: input.title });
   return id;
 }
 
+export function buildMobileDashboardPayload(input: {
+  user: { id: number; name: string | null; role: string };
+  suppliers: unknown[];
+  projects: unknown[];
+  contacts: Array<{ id: number; name: string | null; email: string | null; phone: string | null; role: string }>;
+  controlTower: unknown;
+  drafts: unknown[];
+  operationalReferences: { customers: unknown[]; vehicles: unknown[]; materialTypes: unknown[] };
+}) {
+  return {
+    user: { id: input.user.id, name: input.user.name, role: input.user.role },
+    suppliers: input.suppliers.slice(0, 20),
+    projects: input.projects.slice(0, 20),
+    customers: input.operationalReferences.customers.slice(0, 20),
+    contacts: input.contacts.slice(0, 20).map(contact => ({ id: contact.id, name: contact.name, email: contact.email, phone: contact.phone, role: contact.role })),
+    controlTower: input.controlTower,
+    drafts: input.drafts.slice(0, 20),
+    operationalReferences: input.operationalReferences,
+  };
+}
+
 export function registerMobileRoutes(app: Express) {
+  app.get("/api/mobile/operational-profile", async (req, res) => {
+    const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
+    try { res.json(await getOperationalProfile(user.id)); }
+    catch (error) { console.error("[Mobile] Operational profile read failed", error); res.status(500).json({ error: "تعذر تحميل سياق التشغيل للمستخدم." }); }
+  });
+
+  app.put("/api/mobile/operational-profile", async (req, res) => {
+    const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
+    const parsed = operationalProfileSchema.safeParse(req.body);
+    if (!parsed.success) { res.status(400).json({ error: "بيانات سياق التشغيل غير صالحة.", issues: parsed.error.issues }); return; }
+    try { res.json(await saveOperationalProfile(user.id, parsed.data)); }
+    catch (error) { console.error("[Mobile] Operational profile update failed", error); res.status(500).json({ error: "تعذر حفظ سياق التشغيل للمستخدم." }); }
+  });
+
   app.get("/api/mobile/integrations/whatsapp/status", async (req, res) => {
     const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
     res.json(getWhatsAppConnectionStatus());
@@ -232,7 +283,7 @@ export function registerMobileRoutes(app: Express) {
     const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
     try {
       const [suppliers, projects, contacts, controlTower, drafts, references] = await Promise.all([db.getSuppliers(), db.getProjects(), db.getAllUsers(), db.getControlTowerStats(), db.getSmartIntakeDrafts(), logistics.getOperationalReferenceData()]);
-      res.json({ user: { id: user.id, name: user.name, role: user.role }, suppliers: suppliers.slice(0, 20), projects: projects.slice(0, 20), contacts: contacts.slice(0, 20).map(contact => ({ id: contact.id, name: contact.name, email: contact.email, phone: contact.phone, role: contact.role })), controlTower, drafts: drafts.slice(0, 20), operationalReferences: references });
+      res.json(buildMobileDashboardPayload({ user, suppliers, projects, contacts, controlTower, drafts, operationalReferences: references }));
     } catch (error) { console.error("[Mobile] Dashboard query failed", error); res.status(500).json({ error: "Failed to load mobile dashboard" }); }
   });
 
@@ -298,7 +349,8 @@ export function registerMobileRoutes(app: Express) {
     if (!parsed.success) { res.status(400).json({ error: "Invalid mobile analysis input", issues: parsed.error.issues }); return; }
     try {
       const { sourceType, rawContent } = parsed.data;
-      const result = await invokeLLM({ model: "gpt-5-mini", messages: [{ role: "system", content: "You are NARQA EBOS intake analysis. Extract only evidence present in Arabic or English input. Never invent values. Return empty strings for unknown fields. This is a review draft, not an accounting posting. Classify intent with a short lower_snake_case label." }, { role: "user", content: `Source: ${sourceType}\nContent:\n${rawContent}` }], response_format: analysisOutputSchema });
+      const context = await operationalAnalysisContext(user.id);
+      const result = await invokeLLM({ model: "gpt-5-mini", messages: [{ role: "system", content: `You are NARQA EBOS intake analysis. Extract only evidence present in Arabic or English input. Never invent values. Return empty strings for unknown fields. This is a review draft, not an accounting posting. Classify intent with a short lower_snake_case label. ${context}` }, { role: "user", content: `Source: ${sourceType}\nContent:\n${rawContent}` }], response_format: analysisOutputSchema });
       const content = result.choices[0]?.message.content; if (typeof content !== "string") throw new Error("AI response was not text");
       const analysis = JSON.parse(content) as Record<string, unknown>;
       await db.logActivity({ userId: user.id, module: "smart_intake", action: "mobile_ai_analysis_requested", entityType: "mobile_analysis", entityId: 0, entityLabel: sourceType });
@@ -311,10 +363,11 @@ export function registerMobileRoutes(app: Express) {
     const parsed = imageAnalysisSchema.safeParse(req.body);
     if (!parsed.success) { res.status(400).json({ error: "Invalid image analysis input", issues: parsed.error.issues }); return; }
     try {
+      const context = await operationalAnalysisContext(user.id);
       const result = await invokeLLM({
         model: "gemini-3-flash-preview",
         messages: [
-          { role: "system", content: "You are NARQA EBOS visual operational intake analysis. Extract only evidence visible in the image. Analyse Arabic and English vehicle-load tickets, receiving notes, supplier invoices, and receipts. Never invent values. Return empty strings for unknown fields. This is an editable review proposal only, never an automatic posting." },
+          { role: "system", content: `You are NARQA EBOS visual operational intake analysis. Extract only evidence visible in the image. Analyse Arabic and English vehicle-load tickets, receiving notes, supplier invoices, and receipts. Never invent values. Return empty strings for unknown fields. This is an editable review proposal only, never an automatic posting. ${context}` },
           { role: "user", content: [
             { type: "text", text: `Source: ${parsed.data.sourceType}\nContext: ${parsed.data.context ?? ""}\nExtract vendor/client, amount, currency, document date, reference number, tax number, and the most likely lower_snake_case intent.` },
             { type: "image_url", image_url: { url: parsed.data.imageDataUrl, detail: "high" } },
@@ -336,10 +389,11 @@ export function registerMobileRoutes(app: Express) {
     if (!parsed.success) { res.status(400).json({ error: `Invalid document page. PDF analysis supports up to ${MAX_DOCUMENT_PAGES} pages per file.`, issues: parsed.error.issues }); return; }
     try {
       const pageInput = parsed.data;
+      const context = await operationalAnalysisContext(user.id);
       const result = await invokeLLM({
         model: "gemini-3.1-pro-preview",
         messages: [
-          { role: "system", content: "You are NARQA EBOS high-accuracy document-page analysis. Analyse only visible evidence in this single page, including Arabic/English print and handwriting when legible. Never infer or copy values from prior pages. Return one field item only when a visible snippet supports it; include that exact snippet in evidence. Mark unreadable when no reliable business evidence is visible. Candidate operationType values are vehicle_load, receiving_note, supplier_invoice, receipt, or unknown. This result is evidence for human review and never posts automatically." },
+          { role: "system", content: `You are NARQA EBOS high-accuracy document-page analysis. Analyse only visible evidence in this single page, including Arabic/English print and handwriting when legible. Never infer or copy values from prior pages. Return one field item only when a visible snippet supports it; include that exact snippet in evidence. Mark unreadable when no reliable business evidence is visible. Candidate operationType values are vehicle_load, receiving_note, supplier_invoice, receipt, or unknown. This result is evidence for human review and never posts automatically. ${context}` },
           { role: "user", content: [
             { type: "text", text: `File: ${pageInput.fileName}\nPage: ${pageInput.pageNumber} of ${pageInput.totalPages}\nContext: ${pageInput.context ?? ""}\nExtract page-level evidence for the allowed fields only.` },
             { type: "image_url", image_url: { url: pageInput.imageDataUrl, detail: "high" } },
@@ -360,7 +414,8 @@ export function registerMobileRoutes(app: Express) {
     const parsed = operationAnalysisSchema.safeParse(req.body);
     if (!parsed.success) { res.status(400).json({ error: "Invalid operational analysis input", issues: parsed.error.issues }); return; }
     try {
-      const result = await invokeLLM({ model: "gpt-5", messages: [{ role: "system", content: "You are NARQA EBOS operational logistics analysis. Extract only evidence in the supplied Arabic or English document/voice text. Identify a vehicle load, a receiving note, or an unsupported command. Never invent values. Return ISO datetime when explicit; otherwise empty string. Quantity and prices must be plain decimal strings or empty strings. This is an editable review proposal only and never posts automatically." }, { role: "user", content: `Source: ${parsed.data.sourceType}\nContent:\n${parsed.data.rawContent}` }], response_format: operationAnalysisOutputSchema, reasoning: { effort: "low" } });
+      const context = await operationalAnalysisContext(user.id);
+      const result = await invokeLLM({ model: "gpt-5", messages: [{ role: "system", content: `You are NARQA EBOS operational logistics analysis. Extract only evidence in the supplied Arabic or English document/voice text. Identify a vehicle load, a receiving note, or an unsupported command. Never invent values. Return ISO datetime when explicit; otherwise empty string. Quantity and prices must be plain decimal strings or empty strings. This is an editable review proposal only and never posts automatically. ${context}` }, { role: "user", content: `Source: ${parsed.data.sourceType}\nContent:\n${parsed.data.rawContent}` }], response_format: operationAnalysisOutputSchema, reasoning: { effort: "low" } });
       const content = result.choices[0]?.message.content; if (typeof content !== "string") throw new Error("AI response was not text");
       const analysis = JSON.parse(content) as Record<string, unknown>;
       await db.logActivity({ userId: user.id, module: "operational_logistics", action: "mobile_operational_analysis_requested", entityType: "mobile_analysis", entityId: 0, entityLabel: parsed.data.sourceType });
@@ -369,4 +424,4 @@ export function registerMobileRoutes(app: Express) {
   });
 }
 
-export const __mobileRouteTestUtils = { mobileDraftSchema, mobileAnalysisSchema, imageAnalysisSchema, documentPageAnalysisSchema, operationAnalysisSchema, vehicleLoadSubmissionSchema, receivingNoteSubmissionSchema, MAX_DOCUMENT_PAGES };
+export const __mobileRouteTestUtils = { mobileDraftSchema, mobileAnalysisSchema, imageAnalysisSchema, documentPageAnalysisSchema, operationAnalysisSchema, operationalProfileSchema, vehicleLoadSubmissionSchema, receivingNoteSubmissionSchema, buildMobileDashboardPayload, MAX_DOCUMENT_PAGES };
