@@ -369,4 +369,6 @@
 - [x] Provide an in-app RTL context screen with loading, unauthenticated, validation, save, success, and recoverable error states
 - [x] Apply the user-selected context as assistive-only instruction to server-side text, image, PDF-page, and operational AI analysis prompts
 - [x] Correct the mobile customer workspace to read real operational customer rows rather than internal user contacts
+- [x] Keep Expo Web free of mobile Bearer-token storage while using resolver-safe native SecureStore adapters on Android and iOS
+- [x] Build and inspect an updated standalone arm64 Android APK after blocking unused biometric permissions in the generated manifest
 - [ ] Validate context selection, native voice dialect behaviour, and sector-specific conversational execution on physical Android and iOS/iPad devices
