@@ -366,6 +366,7 @@
 - [x] Deliver review tasks to managers/admins for submitted purchase requests and newly created review drafts, and deliver purchase decisions to the requester
 - [x] Add protected web and mobile notification list, summary, mark-read, and mark-all-read APIs with validated limits and recipient-only access controls
 - [x] Add responsive web and native mobile notification centers with unread indicators, empty/error/authentication states, and no external message delivery claim
+- [x] Build and inspect a fresh arm64 Android internal APK containing the notification module, embedded JavaScript bundle, v2 signature, and least-privilege permission assertions
 - [x] Add an accessible animated protected-workspace handoff with a staged loader, gentle platform entrance, recovery state, and `prefers-reduced-motion` support
 
 ## Contextual Operating Intelligence
