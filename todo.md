@@ -285,7 +285,7 @@
 - [x] Add explicit local review actions for correcting fields and submitting a confirmed `pending_review` draft with a visible database result
 - [x] Make voice-command submission require and display authenticated state before enabling database insertion
 - [x] Surface a structured success or failure result with draft ID after user-confirmed voice and document submission
-- [ ] Add automated tests for successful and rejected draft submission paths and rebuild a standalone APK
+- [x] Add automated tests for successful and rejected draft submission paths and rebuild a standalone APK
 
 ## Vehicle Loads, Receiving Notes, and Executable Voice Intake
 - [x] Audit existing customer, vehicle, inventory, smart-intake, and audit-log entities against the required vehicle-load and receiving-note workflow
@@ -310,7 +310,7 @@
 - [x] Define official WhatsApp and SMS integration boundaries, consent, contact selection, and secure webhook/API requirements; do not use unofficial scraping or simulated message data
 - [x] Implement supported contact selection and draft creation from manually selected/approved message content before an official messaging connector is configured
 - [x] Ensure the supported app-icon quick action starts the conversational voice draft directly, while documenting Android/iOS limits on raw launcher-icon and global button interception
-- [ ] Add unit, API, authorization, and end-to-end tests for conversational clarification, approval, database insertion, Excel export, and rejected message content
+- [x] Add unit, API, authorization, and end-to-end tests for conversational clarification, approval, database insertion, Excel export, and rejected message content
 
 ## Native OCR Runtime and Continuous Voice-Control Correction
 - [x] Reproduce and diagnose the undefined `extractTextFromImage` native-module failure: expo-text-extractor has no Android native implementation in the installed package
