@@ -59,6 +59,8 @@ jobs:
           ! "$AAPT" dump badging "$APK" | grep -q "uses-permission: name='android.permission.READ_EXTERNAL_STORAGE'"
           ! "$AAPT" dump badging "$APK" | grep -q "uses-permission: name='android.permission.WRITE_EXTERNAL_STORAGE'"
           ! "$AAPT" dump badging "$APK" | grep -q "uses-permission: name='android.permission.SYSTEM_ALERT_WINDOW'"
+          ! "$AAPT" dump badging "$APK" | grep -q "uses-permission: name='android.permission.USE_BIOMETRIC'"
+          ! "$AAPT" dump badging "$APK" | grep -q "uses-permission: name='android.permission.USE_FINGERPRINT'"
 
       - name: Upload standalone internal APK
         uses: actions/upload-artifact@v4
