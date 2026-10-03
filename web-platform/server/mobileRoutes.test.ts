@@ -62,6 +62,14 @@ describe("mobile operational context validation", () => {
   });
 });
 
+describe("mobile in-app notification validation", () => {
+  it("accepts bounded list parameters and rejects invalid polling input", () => {
+    expect(__mobileRouteTestUtils.notificationListQuerySchema.safeParse({ unreadOnly: "true", limit: "30" }).success).toBe(true);
+    expect(__mobileRouteTestUtils.notificationListQuerySchema.safeParse({ unreadOnly: "unknown", limit: "0" }).success).toBe(false);
+    expect(__mobileRouteTestUtils.notificationListQuerySchema.safeParse({ limit: "101" }).success).toBe(false);
+  });
+});
+
 describe("mobile dashboard live-data mapping", () => {
   it("maps customer workspace records from operational customers, not user contacts", () => {
     const dashboard = __mobileRouteTestUtils.buildMobileDashboardPayload({

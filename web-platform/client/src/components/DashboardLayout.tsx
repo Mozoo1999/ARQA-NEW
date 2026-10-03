@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
+import { trpc } from "@/lib/trpc";
 import {
   BookOpen,
   Building2,
@@ -48,6 +49,7 @@ import {
   FileSpreadsheet,
   Database,
   Settings,
+  Bell,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -64,6 +66,7 @@ const navGroups = [
     label: "الرئيسية",
     items: [
       { icon: LayoutDashboard, label: "برج التحكم", path: "/app" },
+      { icon: Bell, label: "الإشعارات", path: "/notifications" },
     ],
   },
   {
@@ -240,6 +243,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 function DashboardLayoutContent({ children, setSidebarWidth }: { children: React.ReactNode; setSidebarWidth: (w: number) => void }) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
+  const notificationSummary = trpc.notifications.summary.useQuery(undefined, { refetchInterval: 30_000, staleTime: 10_000, retry: 1 });
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
@@ -279,6 +283,15 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
       document.body.style.userSelect = "";
     };
   }, [isResizing, setSidebarWidth]);
+
+  const unreadNotifications = notificationSummary.data?.unreadCount ?? 0;
+  const notificationButton = (
+    <button onClick={() => setLocation("/notifications")} className="relative inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-background px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={unreadNotifications ? `${unreadNotifications} إشعارات غير مقروءة` : "فتح الإشعارات"}>
+      <Bell className="h-4 w-4 text-muted-foreground" />
+      <span className="hidden sm:inline">الإشعارات</span>
+      {unreadNotifications > 0 && <span className="flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold leading-none text-primary-foreground">{unreadNotifications > 99 ? "99+" : unreadNotifications}</span>}
+    </button>
+  );
 
   return (
     <>
@@ -397,6 +410,7 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
           <div className="flex border-b h-14 items-center justify-between bg-background/95 px-4 backdrop-blur sticky top-0 z-40">
             <SidebarTrigger className="h-9 w-9 rounded-lg" />
             <span className="text-sm font-medium">{activeItem?.label ?? "NARQA EBOS"}</span>
+            {notificationButton}
           </div>
         )}
         {/* Desktop breadcrumb bar */}
@@ -411,6 +425,7 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
                 </>
               )}
             </div>
+            <div className="mr-auto">{notificationButton}</div>
           </div>
         )}
         <main className="flex-1 p-6">{children}</main>

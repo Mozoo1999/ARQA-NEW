@@ -9,6 +9,7 @@ import {
   decimal,
   json,
   foreignKey,
+  index,
 } from "drizzle-orm/mysql-core";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -354,6 +355,37 @@ export const activityLog = mysqlTable("activity_log", {
 
 export type ActivityLog = typeof activityLog.$inferSelect;
 export type InsertActivityLog = typeof activityLog.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IN-APP NOTIFICATIONS
+// Durable, user-scoped alerts for review work and governed operating updates.
+// They are not browser push notifications and contain no secret/provider payload.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const userNotifications = mysqlTable("user_notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  recipientUserId: int("recipientUserId").notNull().references(() => users.id),
+  actorUserId: int("actorUserId").references(() => users.id),
+  category: mysqlEnum("category", ["task", "approval", "update", "system"]).notNull(),
+  priority: mysqlEnum("priority", ["low", "normal", "high", "urgent"]).notNull().default("normal"),
+  title: varchar("title", { length: 256 }).notNull(),
+  body: text("body"),
+  module: varchar("module", { length: 64 }).notNull(),
+  entityType: varchar("entityType", { length: 64 }),
+  entityId: int("entityId"),
+  actionUrl: varchar("actionUrl", { length: 512 }),
+  dedupeKey: varchar("dedupeKey", { length: 160 }).unique(),
+  metadata: json("metadata"),
+  isRead: boolean("isRead").notNull().default(false),
+  readAt: timestamp("readAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => [
+  index("notif_recipient_created_idx").on(table.recipientUserId, table.createdAt),
+  index("notif_recipient_read_idx").on(table.recipientUserId, table.isRead),
+]);
+
+export type UserNotification = typeof userNotifications.$inferSelect;
+export type InsertUserNotification = typeof userNotifications.$inferInsert;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SMART INTAKE & FINANCIAL DRAFTS (OCR & Voice Commands Ledger Integration)

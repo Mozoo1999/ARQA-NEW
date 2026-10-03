@@ -8,6 +8,7 @@ import { sdk } from "./_core/sdk";
 import { documentPageAnalysisOutputSchema, type DocumentPageAnalysis } from "./documentPageAnalysis";
 import { attachWhatsAppConversation, canReviewWhatsAppInbound, claimWhatsAppInboundEventForReview, getWhatsAppConnectionStatus } from "./whatsappBusiness";
 import { OPERATIONAL_LEVELS, OPERATIONAL_SECTORS, getOperationalProfile, saveOperationalProfile } from "./operationalProfile";
+import * as notifications from "./inAppNotifications";
 
 const decimalString = z.string().regex(/^\d+(?:\.\d{1,3})?$/);
 const entryMethodSchema = z.enum(["voice", "camera", "image", "pdf", "manual"]);
@@ -69,6 +70,11 @@ const operationalProfileSchema = z.object({
   businessLevel: z.enum(OPERATIONAL_LEVELS),
   defaultUnit: z.string().trim().max(32),
   materialVocabulary: z.array(z.string().trim().min(1).max(64)).max(32),
+});
+
+const notificationListQuerySchema = z.object({
+  unreadOnly: z.enum(["true", "false"]).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
 });
 
 const approvedMessageImportSchema = z.object({
@@ -168,6 +174,8 @@ async function operationalAnalysisContext(userId: number) {
 async function createGenericIntakeDraft(userId: number, input: { sourceType: "ocr" | "voice_command"; title: string; intent: string; rawContent: string; confidence?: string; metadata?: Record<string, unknown> }) {
   const id = await db.createSmartIntakeDraft({ sourceType: input.sourceType, title: input.title, intent: input.intent, rawContent: input.rawContent, confidence: input.confidence ?? null, status: "pending_review", metadata: input.metadata ?? null });
   await db.logActivity({ userId, module: "smart_intake", action: "operational_draft_created", entityType: "smart_intake_draft", entityId: id, entityLabel: input.title });
+  try { await notifications.createDraftReviewNotifications({ draftId: id, title: input.title, actorUserId: userId }); }
+  catch (error) { console.error("[Mobile] Draft review notification delivery failed", error); }
   return id;
 }
 
@@ -193,6 +201,37 @@ export function buildMobileDashboardPayload(input: {
 }
 
 export function registerMobileRoutes(app: Express) {
+  app.get("/api/mobile/notifications/summary", async (req, res) => {
+    const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
+    try { res.json(await notifications.getInAppNotificationSummary(user.id)); }
+    catch (error) { console.error("[Mobile] Notification summary failed", error); res.status(500).json({ error: "تعذر تحميل ملخص الإشعارات." }); }
+  });
+
+  app.get("/api/mobile/notifications", async (req, res) => {
+    const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
+    const parsed = notificationListQuerySchema.safeParse(req.query);
+    if (!parsed.success) { res.status(400).json({ error: "معلمات الإشعارات غير صالحة.", issues: parsed.error.issues }); return; }
+    try { res.json(await notifications.listInAppNotifications(user.id, { unreadOnly: parsed.data.unreadOnly === "true", limit: parsed.data.limit })); }
+    catch (error) { console.error("[Mobile] Notification list failed", error); res.status(500).json({ error: "تعذر تحميل الإشعارات." }); }
+  });
+
+  app.post("/api/mobile/notifications/:id/read", async (req, res) => {
+    const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
+    const id = z.coerce.number().int().positive().safeParse(req.params.id);
+    if (!id.success) { res.status(400).json({ error: "معرّف الإشعار غير صالح." }); return; }
+    try {
+      const result = await notifications.markInAppNotificationRead(user.id, id.data);
+      if (!result.found) { res.status(404).json({ error: "الإشعار غير موجود أو غير مخصص لهذا المستخدم." }); return; }
+      res.json(result);
+    } catch (error) { console.error("[Mobile] Mark notification read failed", error); res.status(500).json({ error: "تعذر تحديث الإشعار." }); }
+  });
+
+  app.post("/api/mobile/notifications/read-all", async (req, res) => {
+    const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
+    try { res.json(await notifications.markAllInAppNotificationsRead(user.id)); }
+    catch (error) { console.error("[Mobile] Mark all notifications read failed", error); res.status(500).json({ error: "تعذر تحديث الإشعارات." }); }
+  });
+
   app.get("/api/mobile/operational-profile", async (req, res) => {
     const user = await getAuthenticatedMobileUser(req, res); if (!user) return;
     try { res.json(await getOperationalProfile(user.id)); }
@@ -307,6 +346,8 @@ export function registerMobileRoutes(app: Express) {
       const input = parsed.data;
       const id = await db.createSmartIntakeDraft({ sourceType: input.sourceType, title: input.title, intent: input.intent, vendorName: input.vendorName ?? null, amount: input.amount ?? null, currency: input.currency, documentDate: input.documentDate ?? null, referenceNo: input.referenceNo ?? null, taxNo: input.taxNo ?? null, rawContent: input.rawContent, confidence: input.confidence ?? null, status: "pending_review", metadata: input.metadata ?? null });
       await db.logActivity({ userId: user.id, module: "smart_intake", action: "mobile_draft_created", entityType: "smart_intake_draft", entityId: id, entityLabel: input.title });
+      try { await notifications.createDraftReviewNotifications({ draftId: id, title: input.title, actorUserId: user.id }); }
+      catch (error) { console.error("[Mobile] Mobile draft notification delivery failed", error); }
       res.status(201).json({ id, status: "pending_review" });
     } catch (error) { console.error("[Mobile] Draft creation failed", error); res.status(500).json({ error: "Failed to create mobile draft" }); }
   });
@@ -424,4 +465,4 @@ export function registerMobileRoutes(app: Express) {
   });
 }
 
-export const __mobileRouteTestUtils = { mobileDraftSchema, mobileAnalysisSchema, imageAnalysisSchema, documentPageAnalysisSchema, operationAnalysisSchema, operationalProfileSchema, vehicleLoadSubmissionSchema, receivingNoteSubmissionSchema, buildMobileDashboardPayload, MAX_DOCUMENT_PAGES };
+export const __mobileRouteTestUtils = { mobileDraftSchema, mobileAnalysisSchema, imageAnalysisSchema, documentPageAnalysisSchema, operationAnalysisSchema, operationalProfileSchema, notificationListQuerySchema, vehicleLoadSubmissionSchema, receivingNoteSubmissionSchema, buildMobileDashboardPayload, MAX_DOCUMENT_PAGES };

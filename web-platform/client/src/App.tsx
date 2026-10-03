@@ -11,6 +11,7 @@ import { Loader2 } from "lucide-react";
 const LandingPage = lazy(() => import("./pages/LandingPage"));
 const DashboardLayout = lazy(() => import("./components/DashboardLayout"));
 const ControlTower = lazy(() => import("./pages/ControlTower"));
+const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
 const SmartPricingPage = lazy(() => import("./pages/smart-pricing/SmartPricingPage"));
 const CommandsPage = lazy(() => import("./pages/commands/CommandsPage"));
 const WhatsAppIntegrationPage = lazy(() => import("./pages/integrations/WhatsAppIntegrationPage"));
@@ -85,6 +86,7 @@ function PlatformRoutes() {
           <Route path="/governance/traceability" component={TraceabilityPage} />
           <Route path="/admin/users" component={UsersPage} />
           <Route path="/reports/export" component={ReportsExportPage} />
+          <Route path="/notifications" component={NotificationsPage} />
           <Route path="/erd/explorer" component={ErdExplorerPage} />
           <Route path="/admin/settings" component={SettingsPage} />
           <Route component={NotFound} />

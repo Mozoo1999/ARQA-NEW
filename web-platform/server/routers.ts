@@ -5,6 +5,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
+import * as notifications from "./inAppNotifications";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
@@ -20,6 +21,11 @@ const managerOrAdminProcedure = protectedProcedure.use(({ ctx, next }) => {
   return next({ ctx });
 });
 
+async function notifyBestEffort(label: string, work: () => Promise<unknown>) {
+  try { await work(); }
+  catch (error) { console.error(`[Notifications] ${label} delivery failed`, error); }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // APP ROUTER
 // ─────────────────────────────────────────────────────────────────────────────
@@ -34,6 +40,24 @@ export const appRouter = router({
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
+    }),
+  }),
+
+  // ── IN-APP NOTIFICATIONS ──────────────────────────────────────────────────
+  notifications: router({
+    list: protectedProcedure.input(z.object({ unreadOnly: z.boolean().optional(), limit: z.number().int().min(1).max(100).optional() }).optional()).query(async ({ input, ctx }) => {
+      return notifications.listInAppNotifications(ctx.user.id, input);
+    }),
+    summary: protectedProcedure.query(async ({ ctx }) => {
+      return notifications.getInAppNotificationSummary(ctx.user.id);
+    }),
+    markRead: protectedProcedure.input(z.object({ id: z.number().int().positive() })).mutation(async ({ input, ctx }) => {
+      const result = await notifications.markInAppNotificationRead(ctx.user.id, input.id);
+      if (!result.found) throw new TRPCError({ code: "NOT_FOUND", message: "Notification not found" });
+      return result;
+    }),
+    markAllRead: protectedProcedure.mutation(async ({ ctx }) => {
+      return notifications.markAllInAppNotificationsRead(ctx.user.id);
     }),
   }),
 
@@ -400,6 +424,7 @@ export const appRouter = router({
       if (pr.status !== "draft") throw new TRPCError({ code: "BAD_REQUEST", message: "Only draft requests can be submitted" });
       await db.updatePurchaseRequest(input.id, { status: "submitted", submittedAt: new Date() });
       await db.logActivity({ userId: ctx.user.id, module: "purchase_requests", action: "submitted", entityType: "purchase_request", entityId: input.id, entityLabel: pr.title });
+      await notifyBestEffort("purchase submission", () => notifications.createPurchaseSubmissionNotifications({ requestId: pr.id, requestNumber: pr.requestNumber, title: pr.title, actorUserId: ctx.user.id }));
       return { success: true };
     }),
     review: managerOrAdminProcedure.input(z.object({
@@ -413,6 +438,7 @@ export const appRouter = router({
       const newStatus = input.action === "approve" ? "approved" : "rejected";
       await db.updatePurchaseRequest(input.id, { status: newStatus, reviewedAt: new Date(), reviewedById: ctx.user.id, reviewNotes: input.notes });
       await db.logActivity({ userId: ctx.user.id, module: "purchase_requests", action: input.action === "approve" ? "approved" : "rejected", entityType: "purchase_request", entityId: input.id, entityLabel: pr.title });
+      await notifyBestEffort("purchase decision", () => notifications.createPurchaseDecisionNotification({ requestId: pr.id, requestNumber: pr.requestNumber, title: pr.title, requesterId: pr.requesterId, actorUserId: ctx.user.id, approved: input.action === "approve" }));
       return { success: true };
     }),
     cancel: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input, ctx }) => {
@@ -591,6 +617,7 @@ export const appRouter = router({
         entityId: draftId,
         entityLabel: input.title,
       });
+      await notifyBestEffort("draft review", () => notifications.createDraftReviewNotifications({ draftId, title: input.title, actorUserId: ctx.user.id }));
       return { id: draftId };
     }),
     updateStatus: protectedProcedure.input(z.object({

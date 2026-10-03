@@ -360,6 +360,12 @@
 - [x] Replace the image-led public landing with a responsive operational entry that explains the real review and authorization flow without mock business metrics
 - [x] Split the public bootstrap from the protected platform runtime, provide a visible protected-workspace loading state, and remove development instrumentation from production HTML
 - [x] Validate the public entry at desktop, tablet, and phone widths; verify that it makes no protected `/api/trpc` request before the user enters the workspace
+
+## In-App Notifications
+- [x] Add durable, user-scoped in-app notifications with recipient ownership, actor attribution, read state, priority, action routing, indexes, and deduplication
+- [x] Deliver review tasks to managers/admins for submitted purchase requests and newly created review drafts, and deliver purchase decisions to the requester
+- [x] Add protected web and mobile notification list, summary, mark-read, and mark-all-read APIs with validated limits and recipient-only access controls
+- [x] Add responsive web and native mobile notification centers with unread indicators, empty/error/authentication states, and no external message delivery claim
 - [x] Add an accessible animated protected-workspace handoff with a staged loader, gentle platform entrance, recovery state, and `prefers-reduced-motion` support
 
 ## Contextual Operating Intelligence

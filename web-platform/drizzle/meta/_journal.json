@@ -57,6 +57,13 @@
       "when": 1791046474582,
       "tag": "0007_late_talkback",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1791056113451,
+      "tag": "0008_foamy_scream",
+      "breakpoints": true
     }
   ]
 }
