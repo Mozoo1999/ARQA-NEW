@@ -374,6 +374,7 @@
 - [x] Add server-side runtime validation for general intake, operational logistics, and page-level visual model outputs rather than trusting a JSON cast from the provider
 - [x] Delimit untrusted OCR, transcript, context, and file-name inputs; add deterministic prompt-contract cases plus a three-case live evaluation covering supported evidence, unreadable input, and an embedded assignment injection
 - [x] Standardize native Arabic `expo-speech` feedback with profile-aware dialect fallback, normalized spoken scripts, and a testable helper that never passes generative-TTS direction text to the native engine
+- [x] Build and inspect Android internal APK `a420043`: arm64 bundle embedded, package identity verified, v2 signature valid, SHA-256 recorded, and restricted permissions absent
 - [x] Add an accessible animated protected-workspace handoff with a staged loader, gentle platform entrance, recovery state, and `prefers-reduced-motion` support
 
 ## Contextual Operating Intelligence
