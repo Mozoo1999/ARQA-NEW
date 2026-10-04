@@ -1,67 +1,110 @@
-# ARQA NEW
-IMPORTANT STOR
+# ARQA NEW — NARQA EBOS
 
-## ARQA Supply Core — المرحلة الأولى
+مستودع **NARQA EBOS** للتشغيل المؤسسي: منصة ويب React/Express/TiDB-MySQL، وتطبيق Expo أصلي لأندرويد وiOS/iPad، مع محركات مشتركة لسلسلة التكلفة وتحليل الأوامر العربية.
 
-النواة الأولى لمنصة **ARQA** للمقاولات والتوريدات: تسعير مبني على **سلسلة التكلفة** بدلًا من سعر ثابت للمنتج.
+> هذه وثيقة تسليم تشغيلية دقيقة. لا تعني الحزمة أو الاختبارات أن كل تكامل خارجي أو اختبار جهاز مادي مكتمل؛ الحدود المفتوحة موثقة صراحةً أدناه.
 
-### ما أُضيف في هذا الفرع
+## البنية
 
-- [وثيقة الرؤية والنطاق](docs/01-supply-core-vision-ar.md)
-- [محرك سلسلة التكلفة وقرار المصدر](docs/02-cost-chain-and-decision-engine.md)
-- [نموذج البيانات](docs/03-data-model.md) و[مخطط PostgreSQL](database/001_supply_core.sql)
-- [خارطة التنفيذ](docs/04-delivery-roadmap.md) و[حدود API](docs/05-api-contract.md)
-- محرك TypeScript في `packages/cost-engine/`
-- [نموذج التسعير التفاعلي](apps/web/README.md)
+| المسار | المسؤولية |
+|---|---|
+| `web-platform/` | تطبيق الويب والخادم: React 19، Express، tRPC، Drizzle، MySQL/TiDB، OAuth، تحليل مستندات محكوم، وإشعارات داخلية. |
+| `apps/mobile/` | تطبيق Expo/React Native عربي RTL للهاتف واللوحي: إدخال صوتي/نصي، مراجعة مستندات وصور وPDF، جهات اتصال باختيار فردي، وإشعارات داخلية. |
+| `packages/cost-engine/` | حساب سلسلة التكلفة وترتيب المصادر مع أدلة التكلفة والجودة والقدرة والنقل. |
+| `packages/command-intake/` | تحليل أولي لأوامر عربية؛ التنفيذ الفعلي محكوم بالسجل الخادمي والموافقة الصريحة. |
+| `packages/document-intelligence/` | أنواع ودمج حتمي لأدلة تحليل صفحات المستندات. |
+| `docs/` | أدلة التحقق، حدود الخصوصية، وإثباتات حزم Android. |
 
-> لا يُسعّر المنتج منفصلًا عن مصدره وطريقة نقله وموقع التسليم وتاريخ السعر. كل عرض سعر يحتفظ بلقطة قابلة للمراجعة من عناصر تكلفته.
+## قدرات متحققة في المصدر
 
-### التوسع إلى MVP المقاولات
+- سجلات أوامر عربية مركزية، أسئلة متعددة الجولات، أدوار، تأكيد/رفض، وتدقيق المستخدم/الوقت/القناة.
+- تحليل بصري من الخادم للصور وصفحات PDF المتسلسلة مع أدلة وثقة وتعارضات وصفحات غير مقروءة؛ لا إدراج تلقائي من الذكاء الاصطناعي.
+- عقود وقت تشغيل خادمية لمخرجات الذكاء الاصطناعي وحماية من جعل النص المستخرج أو ملف المستخدم تعليمات للنموذج.
+- إدخال تشغيلي لمورد/عميل/مشروع/نقلة/حمولة/إذن استلام ومسودات مالية ضمن التفويض والموافقة.
+- مركز صلاحيات للجوال، اختيار جهة اتصال واحدة فقط، وعدم قراءة SMS أو كشط WhatsApp.
+- إشعارات داخلية دائمة مرتبطة بالمستخدم، حالة قراءة، وصفحات ويب وجوال، وتنبيه لمسارات المراجعة والاعتماد.
+- تغذية صوتية عربية أصلية موحدة تتبع اللهجة المعتمدة عند دعمها؛ لا يوجد تسجيل خفي أو تشغيل صوت في الخلفية.
 
-- [رؤية ARQA كمنصة تشغيل ذكية](docs/00-arqa-platform-vision-ar.md)
-- [نطاق MVP للمقاولات والتوريدات](docs/06-contracting-mvp-module-map-ar.md)
-- [المعمارية القابلة للتوسع](docs/07-platform-architecture-ar.md)
-- [الحوكمة التشغيلية والبيانية](docs/08-operating-governance-ar.md)
+## التشغيل والتحقق من نسخة نظيفة
 
-### الرؤية المستقبلية
+### المتطلبات
 
-- [ARQA كمنصة تشغيل ذكية عالمية](docs/09-future-operating-platform-vision-ar.md)
+- Node.js 22 أو أحدث.
+- Corepack/pnpm (المستودع يثبت إصدار pnpm المقترح في الحزمة).
+- MySQL 8 أو TiDB متوافق لتشغيل منصة الويب.
+- Android SDK/JDK 21 لبناء APK محلياً، أو GitHub Actions المرفق.
+- حساب Apple Developer وجهاز/خدمات Apple فقط عند إصدار IPA موقّع.
 
-### التحصيل والمدخلات الذكية
-
-- [مواصفات الصوت والصور والمستندات وواتساب والتحصيل](docs/10-multimodal-inputs-collections-ar.md)
-- [متطلبات واتساب Business وعقود التكامل](docs/11-whatsapp-integration-ar.md)
-- [مخطط بيانات التحصيل والمدخلات](database/002_multimodal_collections.sql)
-
-### ذكاء إشعارات الهاتف
-
-- [مواصفات إشعارات الهاتف والاقتراحات المالية](docs/12-mobile-notification-intelligence-ar.md)
-- [مخطط بيانات الإشعارات والمطابقات والاقتراحات](database/003_mobile_notification_suggestions.sql)
-
-### النسخة المحمولة متعددة المنصات
-
-أُضيف تطبيق Expo في `apps/mobile/` ليعمل على iPhone وAndroid والأجهزة اللوحية. التطبيق يعيد استخدام `packages/cost-engine/` و`packages/command-intake/` مباشرة، ويقدم حاسبة سلسلة تكلفة فعلية وتحليل أوامر عربية مع طلب تأكيد قبل أي تنفيذ. التخطيط يتكيف إلى تنقل سفلي في الهاتف وشريط جانبي في الشاشات اللوحية بعرض 768 نقطة أو أكثر.
-
-للتشغيل:
+### تثبيت محرك التكلفة والجوال
 
 ```bash
-pnpm install
-cd apps/mobile
-pnpm install
-pnpm start
+git clone https://github.com/Mozoo1999/ARQA-NEW.git
+cd ARQA-NEW
+corepack enable
+pnpm install --frozen-lockfile
+pnpm test:cost-engine
+pnpm --dir apps/mobile exec tsc --noEmit
 ```
 
-للتأكد من حزمة الويب:
+### تثبيت وتشغيل منصة الويب
+
+`web-platform` حزمة مستقلة بقفل تبعياتها الخاص:
 
 ```bash
-pnpm exec expo export --platform web
+cd web-platform
+pnpm install --ignore-workspace --frozen-lockfile
+cp .env.example .env
+# عيّن القيم الحقيقية في .env محلياً أو في مدير أسرار بيئة النشر.
+pnpm check
+pnpm test
+pnpm build
+pnpm dev
 ```
 
-للتشغيل المحلي على Android أو iOS:
+طبّق **الهجرات الموجودة فقط** إلى قاعدة بيانات مصرح بها بعد مراجعة SQL ونسخه الاحتياطي. لا تُنشئ هجرة جديدة في بيئة إنتاج لمجرد تثبيت التطبيق.
 
 ```bash
-pnpm run android
-pnpm run ios
+pnpm drizzle-kit migrate
 ```
 
-حالة التسليم الحالية: **APK/AAB وiOS IPA غير مولدة** لأن مستودع ARQA-NEW لا يحتوي على إعداد توقيع Android أو Apple Developer. استخدم `apps/mobile/README.md` لأوامر EAS Build الدقيقة بعد توفير بيانات التوقيع. الواجهة الحالية صريحة في أن المستودع لا يوفر backend إنتاجياً بعد؛ لذلك لا تدعي حفظ بيانات أو إشعارات أصلية.
+## Android: إصدار داخلي قابل للتثبيت
+
+آخر حزمة تحقق منها المشروع بنيت من الالتزام `a4200434cb3b11344e0801e212208fc089da2599` عبر GitHub Actions التشغيل `37176268480`.
+
+| البند | القيمة |
+|---|---|
+| اسم الحزمة | `com.narqa.ebos` |
+| المعمارية | `arm64-v8a` |
+| JavaScript | `assets/index.android.bundle` مضمّن؛ لا تحتاج Metro |
+| التوقيع | APK v2 صالح (مفتاح Debug داخلي) |
+| SHA-256 | `d7771352958c0097a74fcdab2db2f08a2b57af8b3fd1ca40397e098fc7aea4f2` |
+
+لتثبيت نسخة اختبارية: نزّل artifact باسم `narqa-ebos-internal-release-apk` من [تشغيل البناء الناجح](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/37176268480)، فك الضغط، ثم انقل `app-release.apk` إلى هاتف arm64، واسمح لمدير الملفات بالتثبيت من هذا المصدر. تحقق من SHA-256 قبل التثبيت.
+
+توجد نسخة تحقق محلية مؤقتة في بيئة العمل؛ للاحتفاظ بها داخل الفريق استخدم artifact أو اصنع release داخلياً جديداً، لأن GitHub Actions يحتفظ به لمدة 14 يوماً فقط.
+
+## iOS وiPad
+
+المصدر يدعم iOS/iPad من إعداد Expo، لكن **لا يوجد IPA موقّع أو اختبار جهاز iOS مادي موثق**. يلزم حساب Apple Developer وشهادات وتوفير وتوقيع مناسب قبل أي تثبيت على iPhone/iPad. لا تستنتج جاهزية iOS من نجاح APK Android.
+
+## الخصوصية والتكاملات
+
+- جهات الاتصال: منتقٍ واحد فقط يبدأه المستخدم؛ لا رفع جماعي لدفتر العناوين.
+- SMS: لا قراءة لصندوق الرسائل أو مراقبة خلفية؛ متطلبات Android للعميل الافتراضي لا تنطبق على هذا التطبيق.
+- WhatsApp: حالة التكامل `not_configured` إلى أن تتوافر بيانات Meta Business الرسمية، webhook موقّع، سياسة موافقة/احتفاظ، ومعالجة تكرار؛ لا يوجد كشط WhatsApp Web.
+- الذكاء الاصطناعي: الطلبات الحساسة تمر بالخادم فقط. لا تضع مفاتيح Forge أو Meta في تطبيق الجوال أو المصدر.
+
+## وثائق إثبات رئيسية
+
+- `docs/AI-ANALYSIS-AND-SPEECH-VERIFICATION-2026-10-04.md`
+- `docs/AI-SPEECH-ANDROID-RELEASE-VERIFICATION-2026-10-04.md`
+- `docs/FOUR-PROPOSALS-AND-MOBILE-RELEASE-2026-10-04.md`
+- `web-platform/docs/IOS-IPAD-READINESS-2026-09-24.md`
+- `docs/IN-APP-NOTIFICATIONS-2026-10-03.md`
+
+## حدود يجب ألا تُخفى
+
+1. يتطلب إثبات OAuth الفعلي والميكروفون والكاميرا وتحليل PDF وإدراج سجل من هاتف Android مصادق عليه اختباراً ميدانياً.
+2. لا تتوافر حزمة iOS/iPad موقعة أو تحقق مادي بعد.
+3. WhatsApp Business وSMS ليسا متصلين إنتاجياً من دون بيانات الاعتماد والسياسات الرسمية.
+4. حزمة Android الداخلية موقعة بمفتاح Debug؛ لا تُستخدم للنشر العام أو Google Play.

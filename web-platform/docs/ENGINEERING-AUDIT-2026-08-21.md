@@ -3,6 +3,8 @@
 **Audit date:** 21 August 2026  
 **Scope:** Repository completeness, web runtime, backend and schema alignment, documentation, test/build verification, and native mobile release readiness.
 
+> **Historical snapshot — superseded for current delivery status.** This audit correctly described the repository on 21 August 2026, before the Expo mobile source, governed visual/voice flows, current migrations, and Android internal build workflow were added. For the current evidence, use `../../docs/AI-SPEECH-ANDROID-RELEASE-VERIFICATION-2026-10-04.md`, `../../docs/AI-ANALYSIS-AND-SPEECH-VERIFICATION-2026-10-04.md`, and the root `README.md`. iOS physical-device validation and official WhatsApp credentials remain open; do not infer them from this historical document.
+
 ## Evidence-based result
 
 The web application source is present and its static quality gates pass. However, the repository is **not currently complete as a native mobile deliverable**. There is no Expo/React Native project, no `app.json`, no `eas.json`, no Android/iOS source, and no Android SDK, Gradle, EAS CLI, or signing configuration in the build environment. Therefore, no genuine APK or IPA can be produced or supplied from the current repository.
