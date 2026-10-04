@@ -12,7 +12,7 @@ export const documentPageAnalysisOutputSchema = {
       properties: {
         pageNumber: { type: "integer", minimum: 1 },
         status: { type: "string", enum: ["readable", "partial", "unreadable"] },
-        documentType: { type: "string" },
+        documentType: { type: "string", enum: ["vehicle_load", "receiving_note", "supplier_invoice", "receipt", "unknown"] },
         fields: {
           type: "array",
           items: {

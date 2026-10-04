@@ -369,6 +369,11 @@
 - [x] Add protected web and mobile notification list, summary, mark-read, and mark-all-read APIs with validated limits and recipient-only access controls
 - [x] Add responsive web and native mobile notification centers with unread indicators, empty/error/authentication states, and no external message delivery claim
 - [x] Build and inspect a fresh arm64 Android internal APK containing the notification module, embedded JavaScript bundle, v2 signature, and least-privilege permission assertions
+
+## AI Analysis and Speech Hardening
+- [x] Add server-side runtime validation for general intake, operational logistics, and page-level visual model outputs rather than trusting a JSON cast from the provider
+- [x] Delimit untrusted OCR, transcript, context, and file-name inputs; add deterministic prompt-contract cases plus a three-case live evaluation covering supported evidence, unreadable input, and an embedded assignment injection
+- [x] Standardize native Arabic `expo-speech` feedback with profile-aware dialect fallback, normalized spoken scripts, and a testable helper that never passes generative-TTS direction text to the native engine
 - [x] Add an accessible animated protected-workspace handoff with a staged loader, gentle platform entrance, recovery state, and `prefers-reduced-motion` support
 
 ## Contextual Operating Intelligence
