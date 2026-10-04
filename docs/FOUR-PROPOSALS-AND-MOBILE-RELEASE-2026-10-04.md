@@ -67,6 +67,30 @@
 
 ## 4. تطبيق الهاتف القابل للتثبيت
 
-سيُبنى إصدار Android مستقل بعد مزامنة هذا التصحيح، ثم سيتحقق من وجود `assets/index.android.bundle` ومعرف `com.narqa.ebos` ومكتبات `arm64-v8a` وتوقيع APK صالح وأذونات أقل قدر ممكن قبل تسليمه.
+### حزمة Android المتحققة
+
+| البند | القيمة |
+|---|---|
+| المصدر | `Mozoo1999/ARQA-NEW`، الالتزام `614d3a70a5be87a604b8e706e1e4c4f3e948000d` |
+| GitHub Actions | `Build Internal Android APK`، Run `37173555558` — ناجح |
+| الملف | `NARQA-EBOS-614d3a7-four-proposals-arm64-internal.apk` |
+| الحجم | `36,830,278` بايت |
+| SHA-256 | `6dfd65f0af60c88d1d85350357e27ca6bd9ada10fde48d8e15ba9029e25537b7` |
+| Android application ID | `com.narqa.ebos` |
+| المعمارية | `arm64-v8a` |
+| JavaScript | يوجد `assets/index.android.bundle`؛ لا يحتاج Metro للتشغيل |
+| التوقيع | APK Signature Scheme v2 ناجح |
+
+### الأذونات الفعلية
+
+تظهر الحزمة: الكاميرا، الإنترنت، اختيار جهات الاتصال، اختيار صور، الميكروفون، الاهتزاز، وحالة الشبكة. لا تظهر: `READ_SMS` أو `RECEIVE_SMS` أو `WRITE_CONTACTS` أو `READ_EXTERNAL_STORAGE` أو `WRITE_EXTERNAL_STORAGE` أو `SYSTEM_ALERT_WINDOW` أو `USE_BIOMETRIC` أو `USE_FINGERPRINT`.
+
+### تثبيت Android
+
+1. نزّل ملف APK المتحقق إلى هاتف Android arm64.
+2. افتحه من تطبيق التنزيل أو مدير الملفات واسمح لهذا التطبيق بالتثبيت من المصدر عند طلب Android ذلك.
+3. ثبّت `NARQA EBOS` ثم افتحه. إذا ظهر تعارض توقيع مع نسخة قديمة مختلفة التوقيع، أزل النسخة القديمة أولاً **بعد حفظ أي بيانات محلية مطلوبة** ثم أعد التثبيت.
+
+هذه حزمة **داخلية موقعة بشهادة Android Debug** للتثبيت والتقييم، وليست إصدار Google Play.
 
 تتبع الحزمة الناتجة إثباتات Android فقط. **لا تعني** اختبار الميكروفون أو الكاميرا أو OAuth أو التعرف الصوتي أو تحليل مستند حقيقي على هاتف مادي، ولا تمثل إصدار iOS/iPad موقعاً. يتطلب إصدار iOS حساب Apple Developer وتوقيعاً مناسباً.

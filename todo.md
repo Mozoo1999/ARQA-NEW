@@ -126,6 +126,7 @@
 - [x] Restore or implement native mobile voice/text command intake with human confirmation safeguards
 - [ ] Add and validate Expo iOS/Android configuration and device permissions after native mobile source is restored
 - [x] Restore missing server document-analysis module and required package patch in ARQA-NEW, then validate its independent web-platform install, tests, type check, and production build
+- [x] Build and inspect the current standalone arm64 Android APK with embedded JavaScript, v2 signature, approved package ID, and least-privilege manifest assertions
 
 ## Database & API Integration for OCR & Voice Commands
 - [x] Add financial draft records and verified audit tracking tables in drizzle/schema.ts
