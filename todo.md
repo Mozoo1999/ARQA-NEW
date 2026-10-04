@@ -123,8 +123,9 @@
 - [x] Implement real drag-and-drop file upload with Tesseract.js in-browser OCR extraction
 - [x] Implement WhatsApp Business & Webhook simulator interface
 - [x] Restore or implement the smart cost chain calculation engine in a maintained native mobile project
-- [ ] Restore or implement native mobile voice/text command intake with human confirmation safeguards
+- [x] Restore or implement native mobile voice/text command intake with human confirmation safeguards
 - [ ] Add and validate Expo iOS/Android configuration and device permissions after native mobile source is restored
+- [x] Restore missing server document-analysis module and required package patch in ARQA-NEW, then validate its independent web-platform install, tests, type check, and production build
 
 ## Database & API Integration for OCR & Voice Commands
 - [x] Add financial draft records and verified audit tracking tables in drizzle/schema.ts
