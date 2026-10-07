@@ -69,7 +69,7 @@ pnpm drizzle-kit migrate
 
 ## Android: إصدار داخلي قابل للتثبيت
 
-آخر حزمة تحقق منها المشروع بنيت من الالتزام `a4200434cb3b11344e0801e212208fc089da2599` عبر GitHub Actions التشغيل `37176268480`.
+آخر حزمة تحقق منها المشروع بنيت من الالتزام `844f2978706653395e80e447eed228503cf94445` عبر GitHub Actions التشغيل [`37700480080`](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/37700480080). شغّل الخط نفسه نسخة `x86_64` منفصلة على Android Emulator API 35 وثبت الإقلاع وواجهة التطبيق؛ تظل حزمة الهاتف القابلة للتوزيع `arm64-v8a` فقط.
 
 | البند | القيمة |
 |---|---|
@@ -77,9 +77,9 @@ pnpm drizzle-kit migrate
 | المعمارية | `arm64-v8a` |
 | JavaScript | `assets/index.android.bundle` مضمّن؛ لا تحتاج Metro |
 | التوقيع | APK v2 صالح (مفتاح Debug داخلي) |
-| SHA-256 | `d7771352958c0097a74fcdab2db2f08a2b57af8b3fd1ca40397e098fc7aea4f2` |
+| SHA-256 | `8aa7dbbcd698f0dc34fd02f59c62b74660ed6c522c56aba48108d98cfcff4c2c` |
 
-لتثبيت نسخة اختبارية: نزّل artifact باسم `narqa-ebos-internal-release-apk` من [تشغيل البناء الناجح](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/37176268480)، فك الضغط، ثم انقل `app-release.apk` إلى هاتف arm64، واسمح لمدير الملفات بالتثبيت من هذا المصدر. تحقق من SHA-256 قبل التثبيت.
+لتثبيت نسخة اختبارية: نزّل artifact باسم `narqa-ebos-internal-release-apk` من [تشغيل البناء الناجح](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/37700480080)، فك الضغط، ثم انقل `narqa-ebos-arm64-v8a-internal.apk` إلى هاتف arm64، واسمح لمدير الملفات بالتثبيت من هذا المصدر. تحقق من SHA-256 قبل التثبيت.
 
 توجد نسخة تحقق محلية مؤقتة في بيئة العمل؛ للاحتفاظ بها داخل الفريق استخدم artifact أو اصنع release داخلياً جديداً، لأن GitHub Actions يحتفظ به لمدة 14 يوماً فقط.
 
@@ -98,6 +98,7 @@ pnpm drizzle-kit migrate
 
 - `docs/AI-ANALYSIS-AND-SPEECH-VERIFICATION-2026-10-04.md`
 - `docs/AI-SPEECH-ANDROID-RELEASE-VERIFICATION-2026-10-04.md`
+- `docs/ANDROID-INTERNAL-EMULATOR-VERIFICATION-2026-10-08.md`
 - `docs/FOUR-PROPOSALS-AND-MOBILE-RELEASE-2026-10-04.md`
 - `web-platform/docs/IOS-IPAD-READINESS-2026-09-24.md`
 - `docs/IN-APP-NOTIFICATIONS-2026-10-03.md`

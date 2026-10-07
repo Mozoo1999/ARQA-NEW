@@ -40,17 +40,18 @@ Expo Web يفيد لمراجعة التخطيط وحالات عدم توفر ا�
 
 ## إصدار Android الداخلي القابل للتثبيت
 
-أُنتجت حزمة Android داخلية مستقلة من تشغيل GitHub Actions `37176268480`:
+أُنتجت حزمة Android داخلية مستقلة من تشغيل GitHub Actions [`37700480080`](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/37700480080) من الالتزام `844f2978706653395e80e447eed228503cf94445`:
 
 - package ID: `com.narqa.ebos`
 - ABI: `arm64-v8a`
 - JavaScript bundle: مضمّن داخل `assets/index.android.bundle`
-- SHA-256: `d7771352958c0097a74fcdab2db2f08a2b57af8b3fd1ca40397e098fc7aea4f2`
+- SHA-256: `8aa7dbbcd698f0dc34fd02f59c62b74660ed6c522c56aba48108d98cfcff4c2c`
+- تحقق إضافي: ثبّت وشغّل CI نسخة `x86_64` منفصلة من المصدر نفسه على محاكي Android API 35؛ دليل المحاكي لا يستبدل اختبار الهاتف المادي.
 
 ### خطوات التثبيت
 
-1. افتح [تشغيل GitHub Actions الناجح](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/37176268480).
-2. نزّل artifact باسم `narqa-ebos-internal-release-apk` وفك ضغطه للحصول على `app-release.apk`.
+1. افتح [تشغيل GitHub Actions الناجح](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/37700480080).
+2. نزّل artifact باسم `narqa-ebos-internal-release-apk` وفك ضغطه للحصول على `narqa-ebos-arm64-v8a-internal.apk`.
 3. انقل الملف إلى هاتف Android arm64.
 4. قارن SHA-256 مع القيمة أعلاه.
 5. افتح الملف من مدير الملفات، وافق على السماح بالتثبيت من ذلك المصدر، ثم اختر **تثبيت**.
@@ -80,4 +81,4 @@ Expo Web يفيد لمراجعة التخطيط وحالات عدم توفر ا�
 | `READ_CONTACTS` | اختيار جهة واحدة فقط | كتابة/رفع كامل جهات الاتصال |
 | SMS/سجل المكالمات | — | قراءة أو مراقبة |
 
-لمزيد من أدلة الحزمة والحدود، راجع `../../docs/AI-SPEECH-ANDROID-RELEASE-VERIFICATION-2026-10-04.md` و`../../docs/AI-ANALYSIS-AND-SPEECH-VERIFICATION-2026-10-04.md`.
+لمزيد من أدلة الحزمة والحدود، راجع `../../docs/ANDROID-INTERNAL-EMULATOR-VERIFICATION-2026-10-08.md` و`../../docs/AI-SPEECH-ANDROID-RELEASE-VERIFICATION-2026-10-04.md` و`../../docs/AI-ANALYSIS-AND-SPEECH-VERIFICATION-2026-10-04.md`.
