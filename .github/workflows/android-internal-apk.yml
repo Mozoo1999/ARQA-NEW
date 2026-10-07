@@ -34,6 +34,14 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      # GitHub-hosted Linux runners expose KVM, but the runner account needs
+      # this udev rule before Android Emulator Runner can use acceleration.
+      - name: Enable KVM group permissions
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
 
@@ -70,6 +78,9 @@ jobs:
           ./gradlew assembleRelease --no-daemon --max-workers=2 -PreactNativeArchitectures=x86_64
           cp app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/app-release-x86_64-smoke.apk
 
+      - name: Create Android smoke evidence directory
+        run: mkdir -p android-smoke-evidence
+
       - name: Install and launch Android emulator smoke build
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -79,14 +90,13 @@ jobs:
           disable-animations: true
           script: |
             set -euo pipefail
-            mkdir -p android-smoke-evidence
             adb logcat -c
             adb install -r apps/mobile/android/app/build/outputs/apk/release/app-release-x86_64-smoke.apk
             adb shell am force-stop com.narqa.ebos
             adb shell monkey -p com.narqa.ebos -c android.intent.category.LAUNCHER 1
             sleep 12
             adb shell pidof com.narqa.ebos | grep -Eq '^[0-9 ]+$'
-            adb shell dumpsys activity activities | grep -q 'mResumedActivity:.*com.narqa.ebos'
+            adb shell dumpsys activity activities | grep -Eq 'mResumedActivity:.*com.narqa.ebos|topResumedActivity.*com.narqa.ebos'
             ! adb logcat -d -v brief | grep -q 'FATAL EXCEPTION.*com.narqa.ebos'
             adb logcat -d -v time > android-smoke-evidence/logcat.txt
             adb exec-out screencap -p > android-smoke-evidence/launch.png
