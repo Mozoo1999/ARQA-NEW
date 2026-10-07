@@ -89,7 +89,8 @@ jobs:
           profile: pixel_2
           disable-animations: true
           script: |
-            set -euo pipefail
+            # android-emulator-runner invokes this block with /bin/sh.
+            set -eu
             adb logcat -c
             adb install -r apps/mobile/android/app/build/outputs/apk/release/app-release-x86_64-smoke.apk
             adb shell am force-stop com.narqa.ebos
