@@ -55,11 +55,11 @@ jobs:
         working-directory: apps/mobile/android
         run: |
           ./gradlew assembleRelease --no-daemon --max-workers=2 -PreactNativeArchitectures=arm64-v8a
-          cp app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/app-release-arm64-v8a-internal.apk
+          cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/narqa-ebos-arm64-v8a-internal.apk"
 
       - name: Verify standalone APK artifact
         run: |
-          APK=apps/mobile/android/app/build/outputs/apk/release/app-release-arm64-v8a-internal.apk
+          APK=narqa-ebos-arm64-v8a-internal.apk
           test -f "$APK"
           unzip -l "$APK" | grep -q 'assets/index.android.bundle'
           AAPT="$(command -v aapt || find "${ANDROID_HOME:?}/build-tools" -type f -name aapt | sort -V | tail -1)"
@@ -120,6 +120,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: narqa-ebos-internal-release-apk
-          path: apps/mobile/android/app/build/outputs/apk/release/app-release-arm64-v8a-internal.apk
+          path: narqa-ebos-arm64-v8a-internal.apk
           if-no-files-found: error
           retention-days: 14
