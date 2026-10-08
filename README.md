@@ -69,7 +69,7 @@ pnpm drizzle-kit migrate
 
 ## Android: إصدار داخلي قابل للتثبيت
 
-آخر حزمة تحقق منها المشروع بنيت من الالتزام `844f2978706653395e80e447eed228503cf94445` عبر GitHub Actions التشغيل [`37700480080`](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/37700480080). شغّل الخط نفسه نسخة `x86_64` منفصلة على Android Emulator API 35 وثبت الإقلاع وواجهة التطبيق؛ تظل حزمة الهاتف القابلة للتوزيع `arm64-v8a` فقط.
+آخر حزمة تحقق منها المشروع بنيت من الالتزام `9458d85be15774906b30b411106a9fcdf105551c` عبر GitHub Actions التشغيل [`37815936802`](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/37815936802). شغّل الخط نفسه نسخة `x86_64` منفصلة على Android Emulator API 35 وثبت الإقلاع وواجهة التطبيق؛ تظل حزمة الهاتف القابلة للتوزيع `arm64-v8a` فقط.
 
 | البند | القيمة |
 |---|---|
@@ -77,9 +77,9 @@ pnpm drizzle-kit migrate
 | المعمارية | `arm64-v8a` |
 | JavaScript | `assets/index.android.bundle` مضمّن؛ لا تحتاج Metro |
 | التوقيع | APK v2 صالح (مفتاح Debug داخلي) |
-| SHA-256 | `8aa7dbbcd698f0dc34fd02f59c62b74660ed6c522c56aba48108d98cfcff4c2c` |
+| SHA-256 | `d4af26a5b6ee86960d172ededa6719df7b8b36c9121f2d65e021c7632b27928f` |
 
-لتثبيت نسخة اختبارية: نزّل artifact باسم `narqa-ebos-internal-release-apk` من [تشغيل البناء الناجح](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/37700480080)، فك الضغط، ثم انقل `narqa-ebos-arm64-v8a-internal.apk` إلى هاتف arm64، واسمح لمدير الملفات بالتثبيت من هذا المصدر. تحقق من SHA-256 قبل التثبيت.
+لتثبيت نسخة اختبارية: نزّل artifact باسم `narqa-ebos-internal-release-apk` من [تشغيل البناء الناجح](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/37815936802)، فك الضغط، ثم انقل `narqa-ebos-arm64-v8a-internal.apk` إلى هاتف arm64، واسمح لمدير الملفات بالتثبيت من هذا المصدر. تحقق من SHA-256 قبل التثبيت.
 
 توجد نسخة تحقق محلية مؤقتة في بيئة العمل؛ للاحتفاظ بها داخل الفريق استخدم artifact أو اصنع release داخلياً جديداً، لأن GitHub Actions يحتفظ به لمدة 14 يوماً فقط.
 
@@ -105,6 +105,7 @@ pnpm drizzle-kit migrate
 - `docs/ANDROID-INTERNAL-EMULATOR-VERIFICATION-2026-10-08.md`
 - `docs/ANDROID-RELEASE-SIGNING-SETUP.md`
 - `docs/FOUR-PROPOSALS-AND-MOBILE-RELEASE-2026-10-04.md`
+- `docs/FOUR-PROPOSALS-REVALIDATION-2026-10-08.md`
 - `web-platform/docs/IOS-IPAD-READINESS-2026-09-24.md`
 - `docs/IN-APP-NOTIFICATIONS-2026-10-03.md`
 

@@ -7,12 +7,12 @@
 | البند | القيمة |
 |---|---|
 | المستودع | `Mozoo1999/ARQA-NEW` |
-| الفرع/الالتزام | `main` / `844f2978706653395e80e447eed228503cf94445` |
-| GitHub Actions | [`Build Internal Android APK` — التشغيل 37700480080](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/37700480080) |
+| الفرع/الالتزام | `main` / `9458d85be15774906b30b411106a9fcdf105551c` |
+| GitHub Actions | [`Build Internal Android APK` — التشغيل 37815936802](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/37815936802) |
 | نتيجة التشغيل | ناجح |
 | حزمة الهاتف الناتجة | `narqa-ebos-arm64-v8a-internal.apk` |
-| الحزمة المحلية المتحققة | `NARQA-EBOS-844f297-android-internal-arm64.apk` |
-| SHA-256 | `8aa7dbbcd698f0dc34fd02f59c62b74660ed6c522c56aba48108d98cfcff4c2c` |
+| الحزمة المحلية المتحققة | `NARQA-EBOS-9458d85-android-internal-arm64.apk` |
+| SHA-256 | `d4af26a5b6ee86960d172ededa6719df7b8b36c9121f2d65e021c7632b27928f` |
 
 ## ما نفذه خط الإصدار الناجح
 
@@ -52,7 +52,7 @@
 
 ## التثبيت الداخلي على هاتف Android
 
-1. نزّل `narqa-ebos-arm64-v8a-internal.apk` من [تشغيل GitHub Actions الناجح](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/37700480080) (artifact: `narqa-ebos-internal-release-apk`)، أو استخدم ملف التسليم المحلي المرفق.
+1. نزّل `narqa-ebos-arm64-v8a-internal.apk` من [تشغيل GitHub Actions الناجح](https://github.com/Mozoo1999/ARQA-NEW/actions/runs/37815936802) (artifact: `narqa-ebos-internal-release-apk`)، أو استخدم ملف التسليم المحلي المرفق.
 2. تأكد أن الهاتف Android بمعمارية `arm64-v8a` وإصدار Android 7.0/API 24 أو أحدث.
 3. قارن SHA-256 بالقيمة أعلاه قبل التثبيت.
 4. افتح الملف من مدير الملفات، وافق على السماح بالتثبيت من المصدر المحدد، ثم اختر **تثبيت**.
