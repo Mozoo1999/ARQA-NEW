@@ -1,0 +1,138 @@
+name: Build Signed Android Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-signed-release:
+    name: Build signed arm64 Android release
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # Create this protected environment in GitHub before running the workflow.
+    # Its secrets are injected only after the configured environment reviewers approve.
+    environment:
+      name: android-production
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.4.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check mobile TypeScript
+        run: pnpm --dir apps/mobile exec tsc --noEmit
+
+      - name: Generate Android project
+        run: pnpm --dir apps/mobile exec expo prebuild --platform android --no-install --clean
+
+      - name: Materialize protected signing configuration
+        env:
+          ANDROID_RELEASE_KEYSTORE_BASE64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}
+          ANDROID_RELEASE_KEYSTORE_SHA256: ${{ secrets.ANDROID_RELEASE_KEYSTORE_SHA256 }}
+          ANDROID_RELEASE_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}
+          ANDROID_RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
+          ANDROID_RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for NAME in \
+            ANDROID_RELEASE_KEYSTORE_BASE64 \
+            ANDROID_RELEASE_KEYSTORE_SHA256 \
+            ANDROID_RELEASE_KEYSTORE_PASSWORD \
+            ANDROID_RELEASE_KEY_ALIAS \
+            ANDROID_RELEASE_KEY_PASSWORD; do
+            test -n "${!NAME:-}" || { echo "Missing protected signing secret: $NAME" >&2; exit 1; }
+          done
+
+          KEYSTORE="$RUNNER_TEMP/narqa-ebos-release.jks"
+          printf '%s' "$ANDROID_RELEASE_KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE"
+          test -s "$KEYSTORE"
+          ACTUAL_SHA256="$(sha256sum "$KEYSTORE" | awk '{print $1}')"
+          test "$ACTUAL_SHA256" = "$ANDROID_RELEASE_KEYSTORE_SHA256" || {
+            echo 'Decoded release keystore checksum did not match the protected expected value.' >&2
+            exit 1
+          }
+          chmod 600 "$KEYSTORE"
+
+          cat > apps/mobile/android/gradle.properties <<EOF
+          NARQA_RELEASE_STORE_FILE=$KEYSTORE
+          NARQA_RELEASE_STORE_PASSWORD=$ANDROID_RELEASE_KEYSTORE_PASSWORD
+          NARQA_RELEASE_KEY_ALIAS=$ANDROID_RELEASE_KEY_ALIAS
+          NARQA_RELEASE_KEY_PASSWORD=$ANDROID_RELEASE_KEY_PASSWORD
+          EOF
+          chmod 600 apps/mobile/android/gradle.properties
+
+      - name: Configure generated Gradle release signer
+        run: node apps/mobile/scripts/configure-android-release-signing.cjs apps/mobile/android
+
+      - name: Build signed arm64 APK and app bundle
+        working-directory: apps/mobile/android
+        run: |
+          set -euo pipefail
+          ./gradlew assembleRelease bundleRelease --no-daemon --max-workers=2 -PreactNativeArchitectures=arm64-v8a
+          cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/narqa-ebos-arm64-v8a-signed-release.apk"
+          cp app/build/outputs/bundle/release/app-release.aab "$GITHUB_WORKSPACE/narqa-ebos-signed-release.aab"
+
+      - name: Verify signed artifacts
+        run: |
+          set -euo pipefail
+          APK=narqa-ebos-arm64-v8a-signed-release.apk
+          AAB=narqa-ebos-signed-release.aab
+          test -s "$APK"
+          test -s "$AAB"
+          unzip -l "$APK" | grep -q 'assets/index.android.bundle'
+          AAPT="$(command -v aapt || find "${ANDROID_HOME:?}/build-tools" -type f -name aapt | sort -V | tail -1)"
+          APKSIGNER="$(command -v apksigner || find "${ANDROID_HOME:?}/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          test -x "$AAPT"
+          test -x "$APKSIGNER"
+          "$AAPT" dump badging "$APK" | grep -q "package: name='com.narqa.ebos'"
+          "$AAPT" dump badging "$APK" | grep -q "native-code: 'arm64-v8a'"
+          ! "$AAPT" dump badging "$APK" | grep -q "uses-permission: name='android.permission.WRITE_CONTACTS'"
+          ! "$AAPT" dump badging "$APK" | grep -q "uses-permission: name='android.permission.READ_EXTERNAL_STORAGE'"
+          ! "$AAPT" dump badging "$APK" | grep -q "uses-permission: name='android.permission.WRITE_EXTERNAL_STORAGE'"
+          ! "$AAPT" dump badging "$APK" | grep -q "uses-permission: name='android.permission.SYSTEM_ALERT_WINDOW'"
+          ! "$AAPT" dump badging "$APK" | grep -q "uses-permission: name='android.permission.USE_BIOMETRIC'"
+          ! "$AAPT" dump badging "$APK" | grep -q "uses-permission: name='android.permission.USE_FINGERPRINT'"
+          "$APKSIGNER" verify --verbose --print-certs "$APK" | tee signed-apk-signature.txt
+          grep -q 'Verified using v2 scheme (APK Signature Scheme v2): true' signed-apk-signature.txt
+          ! grep -q 'Signer #1 certificate DN: CN=Android Debug' signed-apk-signature.txt
+          sha256sum "$APK" "$AAB" > SHA256SUMS.txt
+
+      - name: Upload signed Android release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: narqa-ebos-signed-android-release
+          path: |
+            narqa-ebos-arm64-v8a-signed-release.apk
+            narqa-ebos-signed-release.aab
+            SHA256SUMS.txt
+            signed-apk-signature.txt
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Remove ephemeral signing material
+        if: always()
+        run: |
+          rm -f "$RUNNER_TEMP/narqa-ebos-release.jks"
+          rm -f apps/mobile/android/gradle.properties

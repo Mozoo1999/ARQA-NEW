@@ -25,6 +25,17 @@ render.experimental.xml
 # Keystore files
 *.jks
 *.keystore
+*.p12
+*.pfx
+*.pem
+*.der
+
+# Local dependencies, generated outputs, and environment files
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
 
 # Google Services (e.g. APIs or Firebase)
 google-services.json

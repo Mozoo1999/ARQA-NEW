@@ -384,6 +384,7 @@
 - [x] Add CI gates that preserve the arm64 distribution APK, verify its embedded bundle/package/manifest/signature prerequisites, and keep the x86_64 emulator APK separate
 - [x] Build and inspect the arm64 Android internal APK from `844f297`, and record the SHA-256 and Android Debug signing limitation
 - [x] Install and launch the separate x86_64 smoke APK on Android Emulator API 35; record the visible home screen, `ReactNativeJS: Running "main"`, and `Displayed com.narqa.ebos/.MainActivity`
+- [x] Prepare a protected `android-production` signed-release workflow, generated-Gradle signer guard, keystore checksum check, and exact GitHub Environment secret setup guide; an organization-owned key and environment approval remain required before it can run
 
 ## Contextual Operating Intelligence
 - [x] Add a user-controlled, authenticated operating-context profile for language, dialect, sector, business level, default unit, and bounded local material vocabulary

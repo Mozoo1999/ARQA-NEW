@@ -83,6 +83,10 @@ pnpm drizzle-kit migrate
 
 توجد نسخة تحقق محلية مؤقتة في بيئة العمل؛ للاحتفاظ بها داخل الفريق استخدم artifact أو اصنع release داخلياً جديداً، لأن GitHub Actions يحتفظ به لمدة 14 يوماً فقط.
 
+### تحويل Android إلى إصدار موقّع للمؤسسة
+
+أضيف سير عمل منفصل `Build Signed Android Release` محمي ببيئة GitHub باسم `android-production`. لا يستخدم أي مفتاح Debug ولا ينفذ قبل توفر الأسرار وموافقة مراجعي البيئة. اتبع [دليل إعداد توقيع Android في GitHub Secrets](docs/ANDROID-RELEASE-SIGNING-SETUP.md) لإنشاء المفتاح محلياً، حفظه في Environment secrets، وبناء APK/AAB موقّعين. لا تضع المفتاح أو كلمة المرور في ملفات المستودع.
+
 ## iOS وiPad
 
 المصدر يدعم iOS/iPad من إعداد Expo، لكن **لا يوجد IPA موقّع أو اختبار جهاز iOS مادي موثق**. يلزم حساب Apple Developer وشهادات وتوفير وتوقيع مناسب قبل أي تثبيت على iPhone/iPad. لا تستنتج جاهزية iOS من نجاح APK Android.
@@ -99,6 +103,7 @@ pnpm drizzle-kit migrate
 - `docs/AI-ANALYSIS-AND-SPEECH-VERIFICATION-2026-10-04.md`
 - `docs/AI-SPEECH-ANDROID-RELEASE-VERIFICATION-2026-10-04.md`
 - `docs/ANDROID-INTERNAL-EMULATOR-VERIFICATION-2026-10-08.md`
+- `docs/ANDROID-RELEASE-SIGNING-SETUP.md`
 - `docs/FOUR-PROPOSALS-AND-MOBILE-RELEASE-2026-10-04.md`
 - `web-platform/docs/IOS-IPAD-READINESS-2026-09-24.md`
 - `docs/IN-APP-NOTIFICATIONS-2026-10-03.md`

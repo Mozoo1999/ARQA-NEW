@@ -58,6 +58,8 @@ Expo Web يفيد لمراجعة التخطيط وحالات عدم توفر ا�
 
 > هذه حزمة اختبار داخلية موقعة بشهادة Android Debug، وليست ملف نشر متجر أو توقيعاً مملوكاً للمؤسسة. لا تثبت فوق تطبيق إنتاجي يملك المعرف نفسه ما لم تتطابق شهادة التوقيع.
 
+لإنشاء APK/AAB موقّعين بمفتاح المؤسسة، اتبع [دليل إعداد توقيع Android في GitHub Secrets](../../docs/ANDROID-RELEASE-SIGNING-SETUP.md). يظل هذا المسار محمياً ببيئة `android-production` ولا يستخدم المفتاح الداخلي Debug.
+
 ## iOS وiPad
 
 يحتوي `app.json` على المعرف `com.narqa.ebos` وإعدادات الهاتف/اللوحي. إصدار IPA قابل للتثبيت أو توزيع TestFlight يتطلب حساب Apple Developer، شهادات، provisioning profile، وفحصاً على جهاز مادي. لم يُنشأ IPA موقّع في بيئة المشروع.
@@ -81,4 +83,4 @@ Expo Web يفيد لمراجعة التخطيط وحالات عدم توفر ا�
 | `READ_CONTACTS` | اختيار جهة واحدة فقط | كتابة/رفع كامل جهات الاتصال |
 | SMS/سجل المكالمات | — | قراءة أو مراقبة |
 
-لمزيد من أدلة الحزمة والحدود، راجع `../../docs/ANDROID-INTERNAL-EMULATOR-VERIFICATION-2026-10-08.md` و`../../docs/AI-SPEECH-ANDROID-RELEASE-VERIFICATION-2026-10-04.md` و`../../docs/AI-ANALYSIS-AND-SPEECH-VERIFICATION-2026-10-04.md`.
+لمزيد من أدلة الحزمة والحدود، راجع `../../docs/ANDROID-RELEASE-SIGNING-SETUP.md` و`../../docs/ANDROID-INTERNAL-EMULATOR-VERIFICATION-2026-10-08.md` و`../../docs/AI-SPEECH-ANDROID-RELEASE-VERIFICATION-2026-10-04.md` و`../../docs/AI-ANALYSIS-AND-SPEECH-VERIFICATION-2026-10-04.md`.
