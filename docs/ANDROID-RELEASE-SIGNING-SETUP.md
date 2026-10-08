@@ -51,15 +51,30 @@ sha256sum narqa-ebos-release.jks | awk '{print $1}' > narqa-ebos-release.jks.sha
 # base64 < narqa-ebos-release.jks | tr -d '\n' > narqa-ebos-release.jks.base64
 ```
 
-ستحتاج إلى خمس قيم فقط:
+أنشئ أيضاً بصمة شهادة التوقيع SHA-256، وهي **ليست** بصمة ملف JKS:
+
+```bash
+keytool -exportcert -rfc \
+  -keystore narqa-ebos-release.jks \
+  -alias narqa-ebos-release \
+  | openssl x509 -noout -fingerprint -sha256 \
+  | awk -F= '{print $2}' \
+  | tr -d ':' \
+  > narqa-ebos-release.cert.sha256
+```
+
+ستحتاج إلى ست قيم فقط:
 
 | GitHub Environment secret | القيمة |
 |---|---|
 | `ANDROID_RELEASE_KEYSTORE_BASE64` | كامل محتوى `narqa-ebos-release.jks.base64` في **سطر واحد** |
 | `ANDROID_RELEASE_KEYSTORE_SHA256` | محتوى `narqa-ebos-release.jks.sha256` |
+| `ANDROID_RELEASE_CERT_SHA256` | محتوى `narqa-ebos-release.cert.sha256`؛ بصمة شهادة التوقيع، لا بصمة ملف JKS |
 | `ANDROID_RELEASE_KEYSTORE_PASSWORD` | كلمة مرور مخزن المفاتيح |
 | `ANDROID_RELEASE_KEY_ALIAS` | `narqa-ebos-release` أو الاسم المستعار الفعلي الذي اخترته |
 | `ANDROID_RELEASE_KEY_PASSWORD` | كلمة مرور المفتاح |
+
+> عند استخدام Google Play App Signing، تكون `ANDROID_RELEASE_CERT_SHA256` بصمة **Upload key** الموجود في ملف JKS الذي يبني الـ AAB، وليست بصمة App signing key التي تحتفظ بها Google.
 
 لا تطبع هذه القيم للتحقق في سجل CI، ولا ترسلها إلى أي شخص عبر المحادثة. الاسم المستعار يمكن اعتباره سرياً هنا لتبسيط إدارة الإعدادات.
 
@@ -71,7 +86,7 @@ sha256sum narqa-ebos-release.jks | awk '{print $1}' > narqa-ebos-release.jks.sha
 2. أنشئ بيئة بالاسم الحرفي: `android-production`.
 3. فعّل **Required reviewers** وأضف مالك الإصدار/المسؤول الأمني. فعّل منع المراجعة الذاتية إن كانت سياسة المؤسسة تتطلب شخصين.
 4. تحت **Deployment branches**، اسمح بـ `main` فقط أو بالفرع المحمي المعتمد للإصدار.
-5. في **Environment secrets**، اختر **Add secret** خمس مرات وأدخل الأسماء والقيم المذكورة في الجدول السابق.
+5. في **Environment secrets**، اختر **Add secret** ست مرات وأدخل الأسماء والقيم المذكورة في الجدول السابق.
 6. لا تضف هذه القيم في **Repository variables** أو `app.json` أو ملفات `.env` أو أي commit. الأسرار محصورة في البيئة المحمية.
 
 لا يمكن لحساب CLI المستخدم في التحقق السابق إدارة هذه الأسرار؛ كانت النتيجة `403 Resource not accessible by integration`. هذه خطوة مقصودة تتطلب صلاحية المالك/المسؤول.
@@ -82,8 +97,8 @@ sha256sum narqa-ebos-release.jks | awk '{print $1}' > narqa-ebos-release.jks.sha
 
 1. راجع الالتزام المختار، ثم ابدأ التشغيل.
 2. وافق على طلب البيئة `android-production` عند ظهور طلب المراجعة.
-3. سيجري سير العمل: TypeScript، `expo prebuild`، فك المفتاح مؤقتاً في `RUNNER_TEMP`، فحص SHA-256 للمفتاح، تكوين Gradle، وبناء APK arm64 وAAB.
-4. يفشل السير العمل صراحةً إذا غاب سر، أو لم تطابق بصمة المفتاح، أو بقي التوقيع `CN=Android Debug`، أو ظهرت أذونات محظورة، أو غاب الـ bundle المضمّن.
+3. سيجري سير العمل: TypeScript، `expo prebuild`، فك المفتاح مؤقتاً في `RUNNER_TEMP`، فحص SHA-256 للمفتاح، التحقق **قبل Gradle** من أن الاسم المستعار PrivateKeyEntry وأن بصمة شهادة الإنتاج مطابقة، تكوين Gradle، وبناء APK arm64 وAAB.
+4. يفشل السير العمل صراحةً إذا غاب سر، أو لم تطابق بصمة المفتاح أو بصمة الشهادة، أو لم يكن الاسم المستعار مفتاحاً خاصاً، أو بقي التوقيع `CN=Android Debug`، أو ظهرت أذونات محظورة، أو غاب الـ bundle المضمّن.
 5. نزّل artifact باسم `narqa-ebos-signed-android-release`. يحتوي على:
    - `narqa-ebos-arm64-v8a-signed-release.apk` للتوزيع الداخلي المباشر.
    - `narqa-ebos-signed-release.aab` لرفع Google Play (عند اختيار هذا المسار).
