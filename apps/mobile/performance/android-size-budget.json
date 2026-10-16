@@ -1,0 +1,8 @@
+{
+  "baselineArtifact": "NARQA-EBOS-9458d85-android-internal-arm64.apk",
+  "baselineCommit": "9458d85be15774906b30b411106a9fcdf105551c",
+  "baselineBytes": 36831710,
+  "maxGrowthPercent": 10,
+  "absoluteMaxBytes": 45000000,
+  "rationale": "The baseline is the independently verified arm64 internal APK built on 2026-10-08. Any growth over 10% or 45 MB requires explicit performance review and a deliberate baseline update. Device-specific Play download size remains measured separately from a signed AAB with bundletool."
+}

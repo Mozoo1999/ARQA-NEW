@@ -51,6 +51,9 @@ jobs:
       - name: Generate Android project
         run: pnpm --dir apps/mobile exec expo prebuild --platform android --no-install --clean
 
+      - name: Configure reproducible Android performance measurements
+        run: node apps/mobile/scripts/configure-android-performance-measurement.cjs apps/mobile/android
+
       - name: Build standalone internal release APK
         working-directory: apps/mobile/android
         run: |
@@ -73,6 +76,17 @@ jobs:
           ! "$AAPT" dump badging "$APK" | grep -q "uses-permission: name='android.permission.USE_BIOMETRIC'"
           ! "$AAPT" dump badging "$APK" | grep -q "uses-permission: name='android.permission.USE_FINGERPRINT'"
 
+      - name: Check Android artifact size budget
+        run: |
+          set -euo pipefail
+          AAPT="$(command -v aapt || find "${ANDROID_HOME:?}/build-tools" -type f -name aapt | sort -V | tail -1)"
+          APKSIGNER="$(command -v apksigner || find "${ANDROID_HOME:?}/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          export AAPT APKSIGNER
+          node apps/mobile/scripts/check-android-release-artifact.cjs \
+            narqa-ebos-arm64-v8a-internal.apk \
+            apps/mobile/performance/android-size-budget.json \
+            android-size-report.json
+
       # The distribution artifact remains arm64-only for managed internal Android devices.
       # Build the identical source for x86_64 solely because GitHub-hosted emulators use it.
       - name: Build x86_64 APK for emulator smoke test
@@ -84,7 +98,9 @@ jobs:
           "$AAPT" dump badging app/build/outputs/apk/release/app-release-x86_64-smoke.apk | grep -q "native-code: 'x86_64'"
 
       - name: Create Android smoke evidence directory
-        run: mkdir -p android-smoke-evidence
+        run: |
+          mkdir -p android-smoke-evidence android-performance-evidence
+          cp android-size-report.json android-performance-evidence/android-size-report.json
 
       - name: Install and launch Android emulator smoke build
         uses: reactivecircus/android-emulator-runner@v2
@@ -104,7 +120,20 @@ jobs:
             adb shell pidof com.narqa.ebos | grep -Eq '^[0-9 ]+$'
             adb shell dumpsys activity activities | grep -Eq 'mResumedActivity:.*com.narqa.ebos|topResumedActivity.*com.narqa.ebos'
             ! adb logcat -d -v brief | grep -q 'FATAL EXCEPTION.*com.narqa.ebos'
+            adb shell dumpsys meminfo com.narqa.ebos > android-performance-evidence/meminfo-before-macrobenchmark.txt
+            adb shell dumpsys gfxinfo com.narqa.ebos > android-performance-evidence/gfxinfo-before-macrobenchmark.txt
+            ./apps/mobile/android/gradlew -p apps/mobile/android :macrobenchmark:connectedCheck \
+              -Pandroid.testInstrumentationRunnerArguments.androidx.benchmark.suppressErrors=EMULATOR \
+              -PreactNativeArchitectures=x86_64 \
+              --no-daemon --max-workers=2
+            find apps/mobile/android/macrobenchmark/build/outputs \
+              -type f \( -name '*.json' -o -name '*.perfetto-trace' \) \
+              -exec cp --parents {} android-performance-evidence/ \;
+            adb shell dumpsys meminfo com.narqa.ebos > android-performance-evidence/meminfo-after-macrobenchmark.txt
+            adb shell dumpsys gfxinfo com.narqa.ebos > android-performance-evidence/gfxinfo-after-macrobenchmark.txt
             adb logcat -d -v time > android-smoke-evidence/logcat.txt
+            adb logcat -d -v time > android-performance-evidence/logcat.txt
+            ! grep -q 'FATAL EXCEPTION.*com.narqa.ebos' android-performance-evidence/logcat.txt
             adb exec-out screencap -p > android-smoke-evidence/launch.png
 
       - name: Upload Android emulator smoke evidence
@@ -113,6 +142,15 @@ jobs:
         with:
           name: narqa-ebos-android-emulator-smoke-evidence
           path: android-smoke-evidence
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload Android performance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: narqa-ebos-android-performance-evidence
+          path: android-performance-evidence
           if-no-files-found: warn
           retention-days: 14
 

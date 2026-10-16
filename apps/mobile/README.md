@@ -83,4 +83,4 @@ Expo Web يفيد لمراجعة التخطيط وحالات عدم توفر ا�
 | `READ_CONTACTS` | اختيار جهة واحدة فقط | كتابة/رفع كامل جهات الاتصال |
 | SMS/سجل المكالمات | — | قراءة أو مراقبة |
 
-لمزيد من أدلة الحزمة والحدود، راجع `../../docs/FOUR-PROPOSALS-REVALIDATION-2026-10-08.md` و`../../docs/ANDROID-RELEASE-SIGNING-SETUP.md` و`../../docs/ANDROID-INTERNAL-EMULATOR-VERIFICATION-2026-10-08.md` و`../../docs/AI-SPEECH-ANDROID-RELEASE-VERIFICATION-2026-10-04.md` و`../../docs/AI-ANALYSIS-AND-SPEECH-VERIFICATION-2026-10-04.md`.
+لمزيد من أدلة الحزمة والحدود، راجع `../../docs/ANDROID-PERFORMANCE-AND-SIZE-TESTING.md` و`../../docs/FOUR-PROPOSALS-REVALIDATION-2026-10-08.md` و`../../docs/ANDROID-RELEASE-SIGNING-SETUP.md` و`../../docs/ANDROID-INTERNAL-EMULATOR-VERIFICATION-2026-10-08.md` و`../../docs/AI-SPEECH-ANDROID-RELEASE-VERIFICATION-2026-10-04.md` و`../../docs/AI-ANALYSIS-AND-SPEECH-VERIFICATION-2026-10-04.md`.

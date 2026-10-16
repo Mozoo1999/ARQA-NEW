@@ -387,6 +387,11 @@
 - [x] Prepare a protected `android-production` signed-release workflow, generated-Gradle signer guard, keystore checksum check, and exact GitHub Environment secret setup guide; an organization-owned key and environment approval remain required before it can run
 - [x] Revalidate the four documented proposals and build/inspect the current arm64 Android internal APK from `9458d85`; preserve explicit WhatsApp, signing, iOS, and physical-device limitations
 
+## Android Performance and Size Gates
+- [x] Add reproducible AndroidX Macrobenchmark source generation for cold/warm startup and home-screen frame timing, and compile the generated module locally against Android API 36
+- [x] Add CI artifact-size validation against a committed arm64 baseline, plus emulator `meminfo`, `gfxinfo`, logcat, Macrobenchmark JSON, and Perfetto evidence collection
+- [ ] Run the documented physical-device acceptance matrix (low/mid phone, current phone, and tablet) and record real-device baseline results before final public release
+
 ## Contextual Operating Intelligence
 - [x] Add a user-controlled, authenticated operating-context profile for language, dialect, sector, business level, default unit, and bounded local material vocabulary
 - [x] Snapshot the selected operating context into every new conversation session so a reviewed command retains its original interpretation context
